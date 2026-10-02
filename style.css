@@ -1,1949 +1,1390 @@
 /* =========================================================
-   MARIAM MAHMOUD
-   Luxury Editorial Website
-   ========================================================= */
+   MindCare Mental Wellness
+   Main JavaScript
+   Prepared By: Eng Ahmad Ramadan
 
-:root {
-    --cream: #f4efe7;
-    --cream-light: #faf7f1;
-    --paper: #eee6da;
+   Booking Flow:
+   index.html → booking.html → Firebase/Firestore
 
-    --plum: #30212b;
-    --plum-dark: #21161e;
-    --plum-soft: #4a3744;
+   IMPORTANT:
+   - No WhatsApp booking from index.html
+   - No visual/CSS changes
+========================================================= */
 
-    --gold: #b49768;
-    --gold-light: #d2bd98;
+document.addEventListener("DOMContentLoaded", () => {
 
-    --olive: #727661;
+    /* =====================================================
+       CONFIG
+    ===================================================== */
 
-    --ink: #282127;
-    --muted: #756d70;
-    --line: rgba(48, 33, 43, 0.14);
+    const BOOKING_PAGE = "booking.html";
 
-    --white: #ffffff;
+    let currentLanguage =
+        localStorage.getItem("mindcare-language") || "ar";
 
-    --serif: "Playfair Display", Georgia, serif;
-    --arabic: "Cairo", sans-serif;
 
-    --container: 1240px;
+    /* =====================================================
+       HELPERS
+    ===================================================== */
 
-    --ease: cubic-bezier(.22, .61, .36, 1);
-}
+    const $ = (selector, parent = document) =>
+        parent.querySelector(selector);
 
+    const $$ = (selector, parent = document) =>
+        Array.from(parent.querySelectorAll(selector));
 
-/* =========================================================
-   RESET
-   ========================================================= */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+    /* =====================================================
+       DOM
+    ===================================================== */
 
-html {
-    scroll-behavior: smooth;
-}
+    const languageSwitch = $("#languageSwitch");
 
-body {
-    background: var(--cream);
-    color: var(--ink);
-    font-family: var(--arabic);
-    line-height: 1.8;
-    overflow-x: hidden;
-}
+    const menuToggle = $("#menuToggle");
+    const mainNav = $("#mainNav");
 
-body::selection {
-    background: var(--plum);
-    color: var(--cream);
-}
+    const topicModal = $("#topicModal");
+    const providerModal = $("#providerModal");
+    const bookingModal = $("#bookingModal");
+    const assessmentModal = $("#assessmentModal");
 
-a {
-    color: inherit;
-    text-decoration: none;
-}
+    const topicModalContent = $("#topicModalContent");
+    const providerModalContent = $("#providerModalContent");
 
-button,
-a {
-    -webkit-tap-highlight-color: transparent;
-}
+    const bookingForm = $("#bookingForm");
+    const bookingProvider = $("#bookingProvider");
+    const bookingSuccess = $("#bookingSuccess");
 
-button {
-    font-family: inherit;
-}
+    const assessmentButton = $("#assessmentButton");
+    const assessmentQuestions = $("#assessmentQuestions");
+    const assessmentResult = $("#assessmentResult");
+    const calculateAssessment = $("#calculateAssessment");
 
-img {
-    display: block;
-    max-width: 100%;
-}
 
-.container {
-    width: min(var(--container), calc(100% - 80px));
-    margin-inline: auto;
-}
+    /* =====================================================
+       TOPICS
+    ===================================================== */
 
+    const topics = {
 
-/* =========================================================
-   HEADER
-   ========================================================= */
-
-.site-header {
-    position: fixed;
-    inset: 0 0 auto;
-    z-index: 1000;
-
-    padding: 24px 0;
-
-    transition:
-        background .4s var(--ease),
-        padding .4s var(--ease),
-        box-shadow .4s var(--ease);
-}
-
-.site-header.scrolled {
-    background: rgba(244, 239, 231, .92);
-    backdrop-filter: blur(18px);
-    padding: 14px 0;
-    box-shadow: 0 10px 40px rgba(33, 22, 30, .06);
-}
-
-.header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 30px;
-}
-
-
-/* Brand */
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    flex-shrink: 0;
-}
-
-.brand-mark {
-    width: 43px;
-    height: 43px;
-
-    display: grid;
-    place-items: center;
-
-    border: 1px solid var(--gold);
-
-    color: var(--plum);
-    font-family: var(--serif);
-    font-size: 13px;
-    letter-spacing: 1px;
-
-    position: relative;
-}
-
-.brand-mark::after {
-    content: "";
-    position: absolute;
-
-    inset: 4px;
-
-    border: 1px solid rgba(180, 151, 104, .35);
-}
-
-.brand-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.05;
-}
-
-.brand-text strong {
-    font-family: var(--serif);
-    font-size: 14px;
-    letter-spacing: 2px;
-    font-weight: 500;
-}
-
-.brand-text small {
-    margin-top: 4px;
-
-    color: var(--muted);
-
-    font-size: 8px;
-    letter-spacing: 3px;
-}
-
-
-/* Navigation */
-
-.navbar {
-    display: flex;
-    align-items: center;
-    gap: 27px;
-}
-
-.nav-link {
-    position: relative;
-
-    color: var(--plum-soft);
-
-    font-size: 12px;
-    font-weight: 500;
-
-    transition: color .3s ease;
-}
-
-.nav-link::after {
-    content: "";
-
-    position: absolute;
-    left: 50%;
-    bottom: -7px;
-
-    width: 0;
-    height: 1px;
-
-    background: var(--gold);
-
-    transform: translateX(-50%);
-
-    transition: width .3s var(--ease);
-}
-
-.nav-link:hover,
-.nav-link.active {
-    color: var(--plum);
-}
-
-.nav-link:hover::after,
-.nav-link.active::after {
-    width: 22px;
-}
-
-
-/* Header actions */
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.language-switcher {
-    border: 0;
-    background: transparent;
-
-    color: var(--muted);
-
-    font-size: 10px;
-    letter-spacing: 1px;
-
-    cursor: pointer;
-}
-
-.language-switcher .active {
-    color: var(--plum);
-    font-weight: 700;
-}
-
-.header-cta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    min-height: 43px;
-    padding: 0 22px;
-
-    background: var(--plum);
-    color: var(--cream);
-
-    font-size: 11px;
-
-    transition:
-        transform .3s var(--ease),
-        background .3s ease;
-}
-
-.header-cta:hover {
-    background: var(--plum-soft);
-    transform: translateY(-2px);
-}
-
-
-/* Mobile menu */
-
-.menu-toggle {
-    display: none;
-
-    width: 43px;
-    height: 43px;
-
-    border: 1px solid var(--line);
-    background: transparent;
-
-    cursor: pointer;
-
-    position: relative;
-}
-
-.menu-toggle span {
-    position: absolute;
-    left: 11px;
-
-    width: 20px;
-    height: 1px;
-
-    background: var(--plum);
-
-    transition: transform .3s ease;
-}
-
-.menu-toggle span:first-child {
-    top: 17px;
-}
-
-.menu-toggle span:last-child {
-    top: 24px;
-}
-
-
-/* =========================================================
-   HERO
-   ========================================================= */
-
-.hero {
-    min-height: 100vh;
-
-    position: relative;
-
-    display: flex;
-    align-items: center;
-
-    overflow: hidden;
-
-    padding-top: 120px;
-
-    background:
-        radial-gradient(
-            circle at 78% 38%,
-            rgba(180, 151, 104, .14),
-            transparent 30%
-        ),
-        var(--cream);
-}
-
-.hero-background {
-    position: absolute;
-    inset: 0;
-
-    pointer-events: none;
-}
-
-.hero-glow {
-    position: absolute;
-
-    width: 650px;
-    height: 650px;
-
-    right: -260px;
-    top: 50%;
-
-    border-radius: 50%;
-
-    background: rgba(114, 118, 97, .08);
-
-    filter: blur(40px);
-}
-
-.hero-orbit {
-    position: absolute;
-
-    border: 1px solid rgba(180, 151, 104, .18);
-
-    border-radius: 50%;
-}
-
-.orbit-one {
-    width: 650px;
-    height: 650px;
-
-    right: -170px;
-    top: 8%;
-}
-
-.orbit-two {
-    width: 440px;
-    height: 440px;
-
-    right: -60px;
-    top: 22%;
-}
-
-.hero-container {
-    width: min(1320px, calc(100% - 80px));
-
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-
-    gap: 70px;
-
-    position: relative;
-    z-index: 2;
-}
-
-
-/* Hero content */
-
-.hero-content {
-    padding-bottom: 30px;
-}
-
-.hero-eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-
-    color: var(--muted);
-
-    font-size: 11px;
-    letter-spacing: .5px;
-
-    margin-bottom: 27px;
-}
-
-.eyebrow-line {
-    width: 40px;
-    height: 1px;
-
-    background: var(--gold);
-}
-
-.hero-title {
-    display: flex;
-    flex-direction: column;
-
-    color: var(--plum);
-
-    font-family: var(--serif);
-    font-weight: 500;
-
-    font-size: clamp(58px, 7vw, 105px);
-    line-height: .98;
-
-    letter-spacing: -3px;
-
-    margin-bottom: 30px;
-}
-
-.hero-title-accent {
-    color: var(--gold);
-    font-style: italic;
-
-    padding-right: 50px;
-}
-
-.hero-description {
-    max-width: 560px;
-
-    color: var(--muted);
-
-    font-size: 15px;
-    line-height: 2.2;
-
-    margin-bottom: 34px;
-}
-
-.hero-buttons {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-
-    margin-bottom: 30px;
-}
-
-.btn {
-    min-height: 53px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 0 25px;
-
-    font-size: 12px;
-
-    transition:
-        transform .3s var(--ease),
-        background .3s ease,
-        color .3s ease,
-        border-color .3s ease;
-}
-
-.btn-primary {
-    gap: 24px;
-
-    background: var(--plum);
-    color: var(--cream);
-}
-
-.btn-primary:hover {
-    background: var(--plum-soft);
-    transform: translateY(-3px);
-}
-
-.btn-arrow {
-    color: var(--gold-light);
-    font-size: 17px;
-}
-
-.btn-secondary {
-    border: 1px solid var(--line);
-    color: var(--plum);
-}
-
-.btn-secondary:hover {
-    border-color: var(--gold);
-    transform: translateY(-3px);
-}
-
-.hero-note {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-
-    color: #8a8082;
-
-    font-size: 10px;
-}
-
-.note-dot {
-    width: 6px;
-    height: 6px;
-
-    border-radius: 50%;
-
-    background: var(--olive);
-}
-
-
-/* Hero visual */
-
-.hero-visual {
-    min-height: 620px;
-
-    position: relative;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.visual-frame {
-    width: min(520px, 100%);
-    aspect-ratio: .78;
-
-    padding: 15px;
-
-    background: var(--plum);
-
-    transform: rotate(2deg);
-
-    box-shadow:
-        0 35px 80px rgba(48, 33, 43, .16);
-}
-
-.visual-inner {
-    width: 100%;
-    height: 100%;
-
-    position: relative;
-
-    overflow: hidden;
-
-    border: 1px solid rgba(210, 189, 152, .45);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background:
-        radial-gradient(
-            circle at 50% 45%,
-            rgba(210, 189, 152, .20),
-            transparent 34%
-        ),
-        linear-gradient(
-            145deg,
-            #49333f,
-            #251923
-        );
-}
-
-.visual-inner::before {
-    content: "";
-
-    position: absolute;
-
-    width: 74%;
-    aspect-ratio: 1;
-
-    border: 1px solid rgba(210, 189, 152, .25);
-
-    border-radius: 50%;
-}
-
-.visual-inner::after {
-    content: "";
-
-    position: absolute;
-
-    width: 46%;
-    aspect-ratio: 1;
-
-    border: 1px solid rgba(210, 189, 152, .14);
-
-    border-radius: 50%;
-}
-
-.visual-label {
-    position: absolute;
-
-    top: 28px;
-    left: 30px;
-
-    color: rgba(244, 239, 231, .7);
-
-    font-size: 9px;
-    letter-spacing: 4px;
-}
-
-.visual-monogram {
-    position: relative;
-    z-index: 2;
-
-    color: var(--gold-light);
-
-    font-family: var(--serif);
-    font-size: clamp(130px, 15vw, 220px);
-    font-weight: 400;
-    line-height: 1;
-
-    text-shadow:
-        0 0 60px rgba(210, 189, 152, .12);
-}
-
-.visual-circle {
-    position: absolute;
-
-    width: 15px;
-    height: 15px;
-
-    border-radius: 50%;
-
-    background: var(--gold);
-
-    box-shadow:
-        0 0 0 8px rgba(180, 151, 104, .1),
-        0 0 30px rgba(180, 151, 104, .4);
-}
-
-.visual-caption {
-    position: absolute;
-
-    right: 25px;
-    bottom: 25px;
-
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-
-    color: rgba(244, 239, 231, .6);
-
-    font-size: 8px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-
-    text-align: right;
-}
-
-
-/* Floating cards */
-
-.floating-card {
-    position: absolute;
-
-    min-width: 145px;
-
-    display: flex;
-    align-items: center;
-    gap: 14px;
-
-    padding: 13px 16px;
-
-    background: rgba(250, 247, 241, .93);
-    backdrop-filter: blur(12px);
-
-    border: 1px solid rgba(48, 33, 43, .08);
-
-    color: var(--plum);
-
-    font-family: var(--serif);
-    font-size: 13px;
-
-    box-shadow: 0 18px 45px rgba(48, 33, 43, .08);
-}
-
-.floating-card-top {
-    top: 17%;
-    left: 1%;
-}
-
-.floating-card-bottom {
-    right: 0;
-    bottom: 14%;
-}
-
-.floating-number {
-    color: var(--gold);
-
-    font-family: var(--arabic);
-    font-size: 9px;
-}
-
-
-/* Hero bottom */
-
-.hero-bottom {
-    position: absolute;
-
-    bottom: 25px;
-    left: 0;
-    right: 0;
-}
-
-.hero-bottom-inner {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-
-    color: #968d8e;
-
-    font-size: 8px;
-    letter-spacing: 2px;
-}
-
-.scroll-line {
-    width: 75px;
-    height: 1px;
-
-    background: var(--gold);
-}
-
-
-/* =========================================================
-   INTRO
-   ========================================================= */
-
-.intro-strip {
-    padding: 125px 0;
-
-    background: var(--plum);
-    color: var(--cream);
-}
-
-.intro-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr .5fr;
-
-    align-items: end;
-
-    gap: 60px;
-}
-
-.section-number {
-    display: block;
-
-    color: var(--gold);
-
-    font-size: 10px;
-    letter-spacing: 2px;
-
-    margin-bottom: 17px;
-}
-
-.intro-title h2,
-.section-heading h2,
-.about-content h2,
-.contact-inner h2 {
-    font-family: var(--serif);
-
-    font-size: clamp(42px, 5vw, 72px);
-    line-height: 1.1;
-
-    font-weight: 400;
-
-    letter-spacing: -1.5px;
-}
-
-.intro-title em,
-.section-heading em,
-.about-content em,
-.contact-inner em {
-    color: var(--gold-light);
-    font-style: italic;
-}
-
-.intro-text {
-    max-width: 440px;
-}
-
-.intro-text p {
-    color: rgba(244, 239, 231, .68);
-
-    font-size: 14px;
-    line-height: 2.1;
-
-    margin-bottom: 25px;
-}
-
-.text-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 15px;
-
-    color: var(--gold-light);
-
-    font-size: 11px;
-
-    transition: gap .3s var(--ease);
-}
-
-.text-link:hover {
-    gap: 22px;
-}
-
-.intro-symbol {
-    justify-self: end;
-
-    width: 130px;
-    height: 130px;
-
-    display: grid;
-    place-items: center;
-
-    border: 1px solid rgba(210, 189, 152, .28);
-
-    border-radius: 50%;
-
-    color: rgba(210, 189, 152, .6);
-
-    font-family: var(--serif);
-    font-size: 23px;
-    letter-spacing: 5px;
-}
-
-
-/* =========================================================
-   ABOUT
-   ========================================================= */
-
-.about-preview {
-    padding: 150px 0;
-
-    background: var(--cream-light);
-}
-
-.about-preview-grid {
-    display: grid;
-    grid-template-columns: .95fr 1fr;
-
-    align-items: center;
-
-    gap: 110px;
-}
-
-.about-image {
-    position: relative;
-}
-
-.image-placeholder {
-    aspect-ratio: .83;
-
-    position: relative;
-
-    overflow: hidden;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background:
-        radial-gradient(
-            circle at 60% 40%,
-            rgba(180, 151, 104, .28),
-            transparent 27%
-        ),
-        linear-gradient(
-            145deg,
-            #d8cec0,
-            #9d8e86
-        );
-}
-
-.image-placeholder::before {
-    content: "";
-
-    position: absolute;
-
-    width: 62%;
-    aspect-ratio: 1;
-
-    border: 1px solid rgba(244, 239, 231, .6);
-
-    border-radius: 50%;
-}
-
-.image-placeholder::after {
-    content: "";
-
-    position: absolute;
-
-    inset: 20px;
-
-    border: 1px solid rgba(244, 239, 231, .35);
-}
-
-.image-letter {
-    position: relative;
-    z-index: 2;
-
-    color: rgba(244, 239, 231, .75);
-
-    font-family: var(--serif);
-    font-size: 180px;
-    line-height: 1;
-}
-
-.image-small-label {
-    position: absolute;
-
-    top: 27px;
-    left: 30px;
-
-    color: rgba(255, 255, 255, .75);
-
-    font-size: 8px;
-    letter-spacing: 3px;
-}
-
-.image-caption {
-    position: absolute;
-
-    right: 25px;
-    bottom: 22px;
-
-    color: rgba(255, 255, 255, .7);
-
-    font-size: 8px;
-    letter-spacing: 1px;
-}
-
-.about-content {
-    max-width: 580px;
-}
-
-.section-kicker {
-    display: inline-block;
-
-    color: var(--gold);
-
-    font-size: 9px;
-    letter-spacing: 3px;
-
-    margin-bottom: 20px;
-}
-
-.about-content h2 {
-    color: var(--plum);
-
-    margin-bottom: 28px;
-}
-
-.about-content p {
-    color: var(--muted);
-
-    font-size: 14px;
-    line-height: 2.1;
-
-    margin-bottom: 16px;
-}
-
-.outline-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 18px;
-
-    margin-top: 18px;
-
-    color: var(--plum);
-
-    font-size: 11px;
-
-    border-bottom: 1px solid var(--gold);
-
-    padding-bottom: 7px;
-
-    transition: gap .3s var(--ease);
-}
-
-.outline-link:hover {
-    gap: 26px;
-}
-
-
-/* =========================================================
-   SERVICES
-   ========================================================= */
-
-.services-preview {
-    padding: 145px 0;
-
-    background: var(--paper);
-}
-
-.section-heading {
-    display: grid;
-    grid-template-columns: 1fr .7fr;
-
-    align-items: end;
-
-    gap: 80px;
-
-    margin-bottom: 75px;
-}
-
-.section-heading h2 {
-    color: var(--plum);
-}
-
-.section-heading > p {
-    max-width: 450px;
-
-    color: var(--muted);
-
-    font-size: 13px;
-    line-height: 2.1;
-}
-
-.services-list {
-    border-top: 1px solid var(--line);
-}
-
-.service-item {
-    min-height: 160px;
-
-    display: grid;
-    grid-template-columns: 90px 1fr 1.3fr 40px;
-
-    align-items: center;
-
-    gap: 25px;
-
-    border-bottom: 1px solid var(--line);
-
-    transition:
-        background .4s ease,
-        padding .4s var(--ease);
-}
-
-.service-item:hover {
-    background: rgba(255, 255, 255, .35);
-
-    padding-inline: 25px;
-}
-
-.service-number {
-    color: var(--gold);
-
-    font-size: 10px;
-    letter-spacing: 2px;
-}
-
-.service-item h3 {
-    color: var(--plum);
-
-    font-family: var(--serif);
-    font-size: 28px;
-    font-weight: 400;
-}
-
-.service-item p {
-    max-width: 420px;
-
-    color: var(--muted);
-
-    font-size: 12px;
-    line-height: 1.9;
-}
-
-.service-arrow {
-    justify-self: end;
-
-    color: var(--gold);
-
-    font-size: 20px;
-
-    transition: transform .3s ease;
-}
-
-.service-item:hover .service-arrow {
-    transform: translate(4px, -4px);
-}
-
-
-/* =========================================================
-   JOURNEY
-   ========================================================= */
-
-.journey-section {
-    padding: 150px 0;
-
-    background: var(--cream-light);
-}
-
-.journey-list {
-    border-top: 1px solid var(--line);
-}
-
-.journey-item {
-    display: grid;
-    grid-template-columns: 100px 1fr;
-
-    gap: 30px;
-
-    padding: 38px 0;
-
-    border-bottom: 1px solid var(--line);
-}
-
-.journey-item h3 {
-    color: var(--plum);
-
-    font-family: var(--serif);
-    font-size: 28px;
-    font-weight: 400;
-
-    margin-bottom: 8px;
-}
-
-.journey-item p {
-    max-width: 650px;
-
-    color: var(--muted);
-
-    font-size: 13px;
-}
-
-
-/* =========================================================
-   JOURNAL
-   ========================================================= */
-
-.journal-section {
-    padding: 150px 0;
-
-    background: var(--plum);
-    color: var(--cream);
-}
-
-.journal-section .section-heading h2 {
-    color: var(--cream);
-}
-
-.journal-section .section-heading > p {
-    color: rgba(244, 239, 231, .62);
-}
-
-.journal-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-
-    border-top: 1px solid rgba(244, 239, 231, .17);
-}
-
-.journal-card {
-    min-height: 390px;
-
-    padding: 35px 30px;
-
-    border-right: 1px solid rgba(244, 239, 231, .17);
-
-    display: flex;
-    flex-direction: column;
-}
-
-.journal-card:first-child {
-    border-right: 0;
-}
-
-.journal-card h3 {
-    max-width: 320px;
-
-    font-family: var(--serif);
-    font-size: 28px;
-    font-weight: 400;
-
-    line-height: 1.35;
-
-    margin-bottom: 20px;
-}
-
-.journal-card p {
-    max-width: 340px;
-
-    color: rgba(244, 239, 231, .58);
-
-    font-size: 12px;
-    line-height: 2;
-}
-
-.journal-card .text-link {
-    margin-top: auto;
-}
-
-.journal-articles {
-    display: none;
-}
-
-
-/* =========================================================
-   FAQ
-   ========================================================= */
-
-.faq-section {
-    padding: 150px 0;
-
-    background: var(--cream);
-}
-
-.faq-list {
-    border-top: 1px solid var(--line);
-}
-
-.faq-list details {
-    border-bottom: 1px solid var(--line);
-}
-
-.faq-list summary {
-    list-style: none;
-
-    cursor: pointer;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 27px 0;
-
-    color: var(--plum);
-
-    font-family: var(--serif);
-    font-size: 23px;
-
-    transition: color .3s ease;
-}
-
-.faq-list summary::-webkit-details-marker {
-    display: none;
-}
-
-.faq-list summary::after {
-    content: "+";
-
-    color: var(--gold);
-
-    font-family: var(--arabic);
-    font-size: 22px;
-    font-weight: 300;
-
-    transition: transform .3s ease;
-}
-
-.faq-list details[open] summary {
-    color: var(--gold);
-}
-
-.faq-list details[open] summary::after {
-    transform: rotate(45deg);
-}
-
-.faq-list details p {
-    max-width: 760px;
-
-    color: var(--muted);
-
-    font-size: 13px;
-    line-height: 2;
-
-    padding: 0 0 28px;
-}
-
-
-/* =========================================================
-   CONTACT
-   ========================================================= */
-
-.contact-section {
-    padding: 145px 0;
-
-    background:
-        radial-gradient(
-            circle at 85% 20%,
-            rgba(210, 189, 152, .12),
-            transparent 30%
-        ),
-        var(--plum-dark);
-
-    color: var(--cream);
-}
-
-.contact-inner {
-    min-height: 380px;
-
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-
-    gap: 60px;
-}
-
-.contact-inner h2 {
-    margin-bottom: 25px;
-}
-
-.contact-inner p {
-    max-width: 500px;
-
-    color: rgba(244, 239, 231, .58);
-
-    font-size: 13px;
-}
-
-.contact-button {
-    min-width: 205px;
-    min-height: 205px;
-
-    border: 1px solid rgba(210, 189, 152, .45);
-
-    border-radius: 50%;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    gap: 12px;
-
-    color: var(--gold-light);
-
-    font-family: var(--serif);
-    font-size: 20px;
-
-    transition:
-        background .4s ease,
-        color .4s ease,
-        transform .4s var(--ease);
-}
-
-.contact-button span:last-child {
-    font-family: var(--arabic);
-    font-size: 18px;
-}
-
-.contact-button:hover {
-    background: var(--gold);
-    color: var(--plum);
-    transform: rotate(5deg);
-}
-
-
-/* =========================================================
-   FOOTER
-   ========================================================= */
-
-.site-footer {
-    padding: 35px 0;
-
-    background: #1a1118;
-
-    color: var(--cream);
-}
-
-.footer-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 30px;
-}
-
-.footer-brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.footer-brand .brand-mark {
-    color: var(--gold-light);
-    border-color: rgba(210, 189, 152, .45);
-}
-
-.footer-brand strong {
-    display: block;
-
-    font-family: var(--serif);
-    font-size: 13px;
-    letter-spacing: 2px;
-    font-weight: 400;
-}
-
-.footer-brand span:not(.brand-mark) {
-    display: block;
-
-    color: rgba(244, 239, 231, .45);
-
-    font-size: 8px;
-    letter-spacing: 1px;
-
-    margin-top: 3px;
-}
-
-.footer-copy {
-    color: rgba(244, 239, 231, .38);
-
-    font-size: 9px;
-}
-
-
-/* =========================================================
-   BACK TO TOP
-   ========================================================= */
-
-.back-to-top {
-    position: fixed;
-
-    right: 25px;
-    bottom: 25px;
-
-    width: 43px;
-    height: 43px;
-
-    border: 1px solid var(--line);
-
-    background: rgba(250, 247, 241, .9);
-
-    color: var(--plum);
-
-    cursor: pointer;
-
-    opacity: 0;
-    visibility: hidden;
-
-    transform: translateY(15px);
-
-    transition:
-        opacity .3s ease,
-        visibility .3s ease,
-        transform .3s var(--ease);
-}
-
-.back-to-top.show {
-    opacity: 1;
-    visibility: visible;
-
-    transform: translateY(0);
-}
-
-.back-to-top:hover {
-    background: var(--plum);
-    color: var(--cream);
-}
-
-
-/* =========================================================
-   REVEAL ANIMATION
-   ========================================================= */
-
-.reveal {
-    opacity: 0;
-
-    transform: translateY(30px);
-
-    transition:
-        opacity .9s var(--ease),
-        transform .9s var(--ease);
-}
-
-.reveal.visible {
-    opacity: 1;
-
-    transform: translateY(0);
-}
-
-
-/* =========================================================
-   ENGLISH MODE
-   ========================================================= */
-
-body.english-mode {
-    direction: ltr;
-}
-
-body.english-mode .hero-title-accent {
-    padding-right: 0;
-    padding-left: 50px;
-}
-
-body.english-mode .hero-eyebrow {
-    flex-direction: row;
-}
-
-body.english-mode .visual-caption {
-    right: auto;
-    left: 25px;
-    text-align: left;
-}
-
-body.english-mode .floating-card-top {
-    left: auto;
-    right: 1%;
-}
-
-body.english-mode .floating-card-bottom {
-    right: auto;
-    left: 0;
-}
-
-body.english-mode .service-arrow {
-    justify-self: start;
-}
-
-body.english-mode .intro-symbol {
-    justify-self: start;
-}
-
-
-/* =========================================================
-   RESPONSIVE — TABLET
-   ========================================================= */
-
-@media (max-width: 1100px) {
-
-    .container,
-    .hero-container {
-        width: min(100% - 50px, var(--container));
-    }
-
-    .navbar {
-        gap: 17px;
-    }
-
-    .nav-link {
-        font-size: 11px;
-    }
-
-    .hero-container {
-        gap: 35px;
-    }
-
-    .hero-title {
-        font-size: clamp(55px, 7vw, 85px);
-    }
-
-    .hero-visual {
-        min-height: 540px;
-    }
-
-    .intro-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .intro-symbol {
-        display: none;
-    }
-
-    .about-preview-grid {
-        gap: 60px;
-    }
-
-    .service-item {
-        grid-template-columns: 60px 1fr 1fr 30px;
-    }
-}
-
-
-/* =========================================================
-   RESPONSIVE — MOBILE
-   ========================================================= */
-
-@media (max-width: 820px) {
-
-    .container,
-    .hero-container {
-        width: min(100% - 36px, var(--container));
-    }
-
-    .site-header {
-        padding: 17px 0;
-    }
-
-    .header-actions {
-        gap: 10px;
-    }
-
-    .navbar {
-        position: fixed;
-
-        top: 75px;
-        left: 18px;
-        right: 18px;
-
-        padding: 25px;
-
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0;
-
-        background: rgba(250, 247, 241, .97);
-        backdrop-filter: blur(20px);
-
-        border: 1px solid var(--line);
-
-        box-shadow: 0 25px 60px rgba(33, 22, 30, .12);
-
-        opacity: 0;
-        visibility: hidden;
-
-        transform: translateY(-15px);
-
-        transition:
-            opacity .3s ease,
-            visibility .3s ease,
-            transform .3s var(--ease);
-    }
-
-    .navbar.active {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-
-    .nav-link {
-        padding: 15px 5px;
-
-        border-bottom: 1px solid var(--line);
-    }
-
-    .nav-link:last-child {
-        border-bottom: 0;
-    }
-
-    .nav-link::after {
-        display: none;
-    }
-
-    .header-cta {
-        display: none;
-    }
-
-    .menu-toggle {
-        display: block;
-    }
-
-    .hero {
-        min-height: auto;
-
-        padding: 140px 0 80px;
-    }
-
-    .hero-container {
-        grid-template-columns: 1fr;
-
-        gap: 55px;
-    }
-
-    .hero-title {
-        font-size: clamp(52px, 15vw, 78px);
-
-        letter-spacing: -2px;
-    }
-
-    .hero-title-accent {
-        padding-right: 25px;
-    }
-
-    .hero-description {
-        font-size: 13px;
-    }
-
-    .hero-buttons {
-        flex-wrap: wrap;
-    }
-
-    .hero-visual {
-        min-height: 490px;
-    }
-
-    .visual-frame {
-        width: min(390px, 84vw);
-    }
-
-    .floating-card-top {
-        top: 7%;
-        left: 0;
-    }
-
-    .floating-card-bottom {
-        right: 0;
-        bottom: 8%;
-    }
-
-    .hero-bottom {
-        display: none;
-    }
-
-    .intro-strip,
-    .about-preview,
-    .services-preview,
-    .journey-section,
-    .journal-section,
-    .faq-section {
-        padding: 95px 0;
-    }
-
-    .intro-grid {
-        grid-template-columns: 1fr;
-
-        gap: 35px;
-    }
-
-    .section-heading {
-        grid-template-columns: 1fr;
-
-        gap: 25px;
-
-        margin-bottom: 50px;
-    }
-
-    .about-preview-grid {
-        grid-template-columns: 1fr;
-
-        gap: 55px;
-    }
-
-    .about-image {
-        max-width: 520px;
-    }
-
-    .service-item {
-        grid-template-columns: 45px 1fr 25px;
-
-        padding: 27px 0;
-    }
-
-    .service-item p {
-        grid-column: 2 / 3;
-
-        margin-top: -12px;
-    }
-
-    .service-item h3 {
-        font-size: 24px;
-    }
-
-    .service-arrow {
-        grid-column: 3;
-        grid-row: 1;
-    }
-
-    .journey-item {
-        grid-template-columns: 50px 1fr;
-    }
-
-    .journal-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .journal-card {
-        min-height: auto;
-
-        padding: 35px 0;
-
-        border-right: 0;
-        border-bottom: 1px solid rgba(244, 239, 231, .17);
-    }
-
-    .journal-card:last-child {
-        border-bottom: 0;
-    }
-
-    .journal-card p {
-        margin-bottom: 35px;
-    }
-
-    .contact-section {
-        padding: 100px 0;
-    }
-
-    .contact-inner {
-        min-height: auto;
-
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .contact-button {
-        width: 160px;
-        min-width: 160px;
-        height: 160px;
-        min-height: 160px;
-
-        font-size: 17px;
-    }
-
-    .footer-inner {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
-
-/* =========================================================
-   RESPONSIVE — SMALL MOBILE
-   ========================================================= */
-
-@media (max-width: 480px) {
-
-    .container,
-    .hero-container {
-        width: calc(100% - 28px);
-    }
-
-    .brand-text {
-        display: none;
-    }
-
-    .language-switcher {
-        font-size: 9px;
-    }
-
-    .hero-title {
-        font-size: 51px;
-    }
-
-    .hero-title-accent {
-        padding-right: 15px;
-    }
-
-    .hero-description {
-        font-size: 12px;
-        line-height: 2;
-    }
-
-    .btn {
-        width: 100%;
-    }
-
-    .hero-buttons {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .hero-visual {
-        min-height: 390px;
-    }
-
-    .floating-card {
-        min-width: 115px;
-
-        padding: 10px 12px;
-
-        font-size: 11px;
-    }
-
-    .floating-card-top {
-        left: -3px;
-    }
-
-    .floating-card-bottom {
-        right: -3px;
-    }
-
-    .visual-label {
-        left: 18px;
-        top: 20px;
-    }
-
-    .visual-caption {
-        right: 18px;
-        bottom: 18px;
-    }
-
-    .intro-title h2,
-    .section-heading h2,
-    .about-content h2,
-    .contact-inner h2 {
-        font-size: 42px;
-    }
-
-    .service-item {
-        grid-template-columns: 35px 1fr 20px;
-    }
-
-    .service-item h3 {
-        font-size: 21px;
-    }
-
-    .service-item p {
-        font-size: 11px;
-    }
-
-    .journey-item h3 {
-        font-size: 22px;
-    }
-
-    .faq-list summary {
-        font-size: 19px;
-    }
-
-    .footer-brand strong {
-        font-size: 11px;
-    }
-}
-
-
-/* =========================================================
-   ACCESSIBILITY
-   ========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-
-    html {
-        scroll-behavior: auto;
-    }
-
-    *,
-    *::before,
-    *::after {
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: .01ms !important;
-    }
-
-    .reveal {
-        opacity: 1;
-        transform: none;
-    }
+        anxiety: {
+            ar: {
+                title: "القلق والتوتر",
+                description:
+                    "القلق شعور طبيعي، لكنه قد يصبح مرهقًا عندما يكون مستمرًا أو يؤثر على الحياة اليومية. الدعم النفسي يمكن أن يساعدك على فهم مصادر القلق وتطوير طرق أكثر توازنًا للتعامل معه.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/anxiety-disorders"
+            },
+            en: {
+                title: "Anxiety & Stress",
+                description:
+                    "Anxiety is a natural response, but it can become overwhelming when it is persistent or interferes with daily life. Psychological support can help you understand its sources and develop healthier coping strategies.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/anxiety-disorders"
             }
+        },
+
+        depression: {
+            ar: {
+                title: "الاكتئاب",
+                description:
+                    "الاكتئاب قد يؤثر على المزاج والطاقة والنوم والتركيز والعلاقات. طلب الدعم النفسي خطوة مهمة لفهم ما تمر به والعمل على تحسين جودة حياتك.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/depression"
+            },
+            en: {
+                title: "Depression",
+                description:
+                    "Depression can affect mood, energy, sleep, concentration and relationships. Seeking psychological support can be an important step toward understanding what you are experiencing and improving your quality of life.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/depression"
+            }
+        },
+
+        panic: {
+            ar: {
+                title: "نوبات الهلع",
+                description:
+                    "نوبات الهلع قد تظهر بصورة مفاجئة مع خوف شديد وأعراض جسدية مزعجة. العلاج والدعم المتخصص يمكن أن يساعدا في فهم هذه التجربة والتعامل معها.",
+                source:
+                    "https://www.nimh.nih.gov/health/publications/panic-disorder-when-fear-overwhelms"
+            },
+            en: {
+                title: "Panic Attacks",
+                description:
+                    "Panic attacks can appear suddenly with intense fear and uncomfortable physical symptoms. Professional support can help you understand the experience and develop ways to manage it.",
+                source:
+                    "https://www.nimh.nih.gov/health/publications/panic-disorder-when-fear-overwhelms"
+            }
+        },
+
+        ocd: {
+            ar: {
+                title: "الوسواس القهري",
+                description:
+                    "الوسواس القهري قد يتضمن أفكارًا متكررة ومزعجة أو سلوكيات قهرية يصعب التحكم بها. التقييم والعلاج المتخصص يمكن أن يساعدا في التعامل مع الأعراض.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/obsessive-compulsive-disorder-ocd"
+            },
+            en: {
+                title: "OCD",
+                description:
+                    "OCD may involve recurring unwanted thoughts or repetitive behaviors that can feel difficult to control. Professional assessment and treatment can help manage symptoms.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/obsessive-compulsive-disorder-ocd"
+            }
+        },
+
+        trauma: {
+            ar: {
+                title: "الصدمات النفسية",
+                description:
+                    "التجارب الصعبة أو الصادمة قد تترك آثارًا مستمرة على المشاعر والسلوك والعلاقات. الحصول على مساحة آمنة ودعم متخصص قد يساعد في التعامل مع آثار هذه التجارب.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/post-traumatic-stress-disorder-ptsd"
+            },
+            en: {
+                title: "Trauma",
+                description:
+                    "Difficult or traumatic experiences can have lasting effects on emotions, behavior and relationships. A safe space and professional support may help with the effects of these experiences.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/post-traumatic-stress-disorder-ptsd"
+            }
+        },
+
+        sleep: {
+            ar: {
+                title: "النوم",
+                description:
+                    "مشكلات النوم قد تؤثر على الطاقة والمزاج والتركيز والصحة النفسية. فهم العوامل المرتبطة بالنوم يمكن أن يكون بداية لتحسين نمط الحياة.",
+                source:
+                    "https://www.nhlbi.nih.gov/health/sleep"
+            },
+            en: {
+                title: "Sleep",
+                description:
+                    "Sleep difficulties can affect energy, mood, concentration and mental well-being. Understanding the factors connected to sleep can be a starting point for healthier habits.",
+                source:
+                    "https://www.nhlbi.nih.gov/health/sleep"
+            }
+        },
+
+        addiction: {
+            ar: {
+                title: "الإدمان والسلوكيات القهرية",
+                description:
+                    "التعامل مع الإدمان أو السلوكيات القهرية يحتاج إلى فهم دون وصم، ودعم مناسب يساعد على بناء خطوات أكثر أمانًا واستقرارًا.",
+                source:
+                    "https://www.samhsa.gov/find-help/national-helpline"
+            },
+            en: {
+                title: "Addiction & Compulsive Behaviors",
+                description:
+                    "Addiction and compulsive behaviors require understanding without stigma. Appropriate support can help create safer and more sustainable steps toward recovery.",
+                source:
+                    "https://www.samhsa.gov/find-help/national-helpline"
+            }
+        },
+
+        "self-esteem": {
+            ar: {
+                title: "تقدير الذات",
+                description:
+                    "تقدير الذات يؤثر على طريقة رؤيتنا لأنفسنا وعلى علاقاتنا وقراراتنا. العمل على فهم الأفكار السلبية وبناء صورة أكثر توازنًا عن الذات قد يكون مفيدًا.",
+                source:
+                    "MindCare Educational Resource"
+            },
+            en: {
+                title: "Self-Esteem",
+                description:
+                    "Self-esteem affects how we see ourselves, our relationships and our decisions. Understanding negative thought patterns and developing a more balanced self-image can be helpful.",
+                source:
+                    "MindCare Educational Resource"
+            }
+        },
+
+        relationships: {
+            ar: {
+                title: "العلاقات",
+                description:
+                    "العلاقات الصحية تحتاج إلى التواصل والحدود والاحترام المتبادل. الدعم النفسي يمكن أن يساعد على فهم أنماط العلاقات وتحسين التواصل.",
+                source:
+                    "MindCare Educational Resource"
+            },
+            en: {
+                title: "Relationships",
+                description:
+                    "Healthy relationships involve communication, boundaries and mutual respect. Psychological support can help explore relationship patterns and improve communication.",
+                source:
+                    "MindCare Educational Resource"
+            }
+        },
+
+        family: {
+            ar: {
+                title: "العائلة",
+                description:
+                    "التحديات العائلية قد تؤثر على المشاعر والاستقرار النفسي. فهم أنماط التواصل ووضع حدود صحية قد يساعد على بناء علاقات أكثر توازنًا.",
+                source:
+                    "MindCare Educational Resource"
+            },
+            en: {
+                title: "Family",
+                description:
+                    "Family challenges can affect emotional well-being. Understanding communication patterns and establishing healthy boundaries can support more balanced relationships.",
+                source:
+                    "MindCare Educational Resource"
+            }
+        },
+
+        communication: {
+            ar: {
+                title: "التواصل",
+                description:
+                    "التواصل الواضح يساعد على التعبير عن الاحتياجات والمشاعر بطريقة أكثر صحة، ويقلل من سوء الفهم والصراعات المتكررة.",
+                source:
+                    "MindCare Educational Resource"
+            },
+            en: {
+                title: "Communication",
+                description:
+                    "Clear communication helps people express needs and emotions in healthier ways while reducing misunderstandings and recurring conflicts.",
+                source:
+                    "MindCare Educational Resource"
+            }
+        }
+    };
+
+
+    /* =====================================================
+       PROVIDERS
+    ===================================================== */
+
+    const providers = {
+
+        tasbeh: {
+            nameAr: "تسبيح محمد",
+            nameEn: "Tasbeh Mohamed",
+
+            roleAr: "أخصائية نفسية إكلينيكية",
+            roleEn: "Clinical Psychologist",
+
+            bioAr:
+                "أخصائية نفسية إكلينيكية (Clinical Psychologist) متخصصة في تقديم الدعم والتقييم النفسي والعلاج الإكلينيكي. تركز على مساعدة الأفراد في التعامل مع مشاعر القلق، التنظيم الانفعالي، الضغوط النفسية، وتحديات العلاقات، وتطوير مهارات التكيف والنمو الذاتي.",
+
+            bioEn:
+                "A Clinical Psychologist specializing in psychological support, assessment, and clinical therapy. Her work focuses on helping individuals manage anxiety, emotional regulation, psychological stress, relationship challenges, coping skills, and personal growth."
+        },
+
+        mariam: {
+            nameAr: "مريم محمود",
+            nameEn: "Mariam Mahmoud",
+
+            roleAr: "أخصائية نفسية إكلينيكية",
+            roleEn: "Clinical Psychologist",
+
+            bioAr:
+                "أخصائية نفسية إكلينيكية (Clinical Psychologist) تركز على تقديم الدعم النفسي للأفراد لمساعدتهم على التعامل مع التوتر اليومي، رفع تقدير الذات، تجاوز التحديات الحياتية، وبناء علاقات صحية ومتوازنة.",
+
+            bioEn:
+                "A Clinical Psychologist focused on supporting individuals in managing daily stress, improving self-esteem, navigating life challenges, and building healthy and balanced relationships."
+        }
+    };
+
+
+    /* =====================================================
+       PROVIDER NORMALIZATION
+    ===================================================== */
+
+    function normalizeProviderSlug(value) {
+
+        if (!value) {
+            return "";
+        }
+
+        const valueString =
+            String(value).trim();
+
+        const normalized =
+            valueString.toLowerCase();
+
+        const providerMap = {
+
+            "tasbeh": "tasbeh",
+            "tasbeh-mohamed": "tasbeh",
+            "tasbeh mohamed": "tasbeh",
+            "تسبيح": "tasbeh",
+            "تسبيح محمد": "tasbeh",
+
+            "mariam": "mariam",
+            "mariam-mahmoud": "mariam",
+            "mariam mahmoud": "mariam",
+            "مريم": "mariam",
+            "مريم محمود": "mariam"
+        };
+
+        return providerMap[normalized] || "";
+    }
+
+
+    /* =====================================================
+       BOOKING NAVIGATION
+    ===================================================== */
+
+    function goToBooking(provider = "") {
+
+        const providerSlug =
+            normalizeProviderSlug(provider);
+
+        const url =
+            providerSlug
+                ? `${BOOKING_PAGE}?provider=${encodeURIComponent(providerSlug)}`
+                : BOOKING_PAGE;
+
+        window.location.href = url;
+    }
+
+
+    /* =====================================================
+       ALL BOOKING TRIGGERS
+    ===================================================== */
+
+    $$("[data-open-booking]").forEach(button => {
+
+        button.addEventListener("click", event => {
+
+            event.preventDefault();
+
+            const provider =
+                button.dataset.provider ||
+                button.dataset.selectedProvider ||
+                button.dataset.providerName ||
+                "";
+
+            closeAllModals();
+            closeMobileMenu();
+
+            goToBooking(provider);
+        });
+    });
+
+
+    /*
+       Some current HTML elements may use:
+       data-selected-provider instead of
+       data-open-booking.
+    */
+
+    $$("[data-selected-provider]").forEach(element => {
+
+        if (
+            element.hasAttribute("data-open-booking")
+        ) {
+            return;
+        }
+
+        element.addEventListener("click", event => {
+
+            event.preventDefault();
+
+            const provider =
+                element.dataset.selectedProvider;
+
+            closeAllModals();
+            closeMobileMenu();
+
+            goToBooking(provider);
+        });
+    });
+
+
+    /* =====================================================
+       LEGACY BOOKING MODAL COMPATIBILITY
+       ---------------------------------------------
+       If bookingModal still exists in index.html,
+       submitting it will NOT send WhatsApp.
+       It redirects to booking.html instead.
+    ===================================================== */
+
+    if (bookingForm) {
+
+        bookingForm.addEventListener("submit", event => {
+
+            event.preventDefault();
+
+            const provider =
+                bookingProvider?.value || "";
+
+            goToBooking(provider);
+        });
+    }
+
+
+    /* =====================================================
+       LANGUAGE
+    ===================================================== */
+
+    function setLanguage(language) {
+
+        currentLanguage =
+            language === "en" ? "en" : "ar";
+
+        localStorage.setItem(
+            "mindcare-language",
+            currentLanguage
+        );
+
+        document.documentElement.lang =
+            currentLanguage;
+
+        document.documentElement.dir =
+            currentLanguage === "ar"
+                ? "rtl"
+                : "ltr";
+
+        document.body.classList.toggle(
+            "english-mode",
+            currentLanguage === "en"
+        );
+
+
+        /* ---------------------------------------------
+           DATA-AR / DATA-EN
+        --------------------------------------------- */
+
+        $$("[data-ar][data-en]").forEach(element => {
+
+            const value =
+                element.getAttribute(
+                    `data-${currentLanguage}`
+                );
+
+            if (value !== null) {
+                element.textContent = value;
+            }
+        });
+
+
+        /* ---------------------------------------------
+           Language Switch
+        --------------------------------------------- */
+
+        if (languageSwitch) {
+
+            languageSwitch.textContent =
+                currentLanguage === "ar"
+                    ? "EN"
+                    : "AR";
+        }
+    }
+
+
+    if (languageSwitch) {
+
+        languageSwitch.addEventListener(
+            "click",
+            () => {
+
+                setLanguage(
+                    currentLanguage === "ar"
+                        ? "en"
+                        : "ar"
+                );
+            }
+        );
+    }
+
+
+    /* =====================================================
+       MOBILE MENU
+    ===================================================== */
+
+    function closeMobileMenu() {
+
+        if (!mainNav || !menuToggle) {
+            return;
+        }
+
+        mainNav.classList.remove("open");
+        mainNav.classList.remove("mobile-open");
+
+        menuToggle.classList.remove("active");
+
+        menuToggle.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+    }
+
+
+    if (menuToggle && mainNav) {
+
+        menuToggle.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+                const isOpen =
+                    mainNav.classList.toggle("open");
+
+                mainNav.classList.toggle(
+                    "mobile-open",
+                    isOpen
+                );
+
+                menuToggle.classList.toggle(
+                    "active",
+                    isOpen
+                );
+
+                menuToggle.setAttribute(
+                    "aria-expanded",
+                    String(isOpen)
+                );
+            }
+        );
+
+
+        $$(".nav-link", mainNav).forEach(link => {
+
+            link.addEventListener(
+                "click",
+                () => closeMobileMenu()
+            );
+        });
+    }
+
+
+    /* =====================================================
+       MODALS
+    ===================================================== */
+
+    function openModal(modal) {
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add("active");
+
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        document.body.classList.add(
+            "modal-open"
+        );
+    }
+
+
+    function closeModal(modal) {
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove("active");
+
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        if (!$(".modal.active")) {
+
+            document.body.classList.remove(
+                "modal-open"
+            );
+        }
+    }
+
+
+    function closeAllModals() {
+
+        $$(".modal").forEach(modal => {
+
+            modal.classList.remove("active");
+
+            modal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+        });
+
+        document.body.classList.remove(
+            "modal-open"
+        );
+    }
+
+
+    /* =====================================================
+       CLOSE MODALS
+    ===================================================== */
+
+    $$(".modal-close, [data-close-modal]").forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                event => {
+
+                    event.preventDefault();
+
+                    const modal =
+                        button.closest(".modal");
+
+                    if (modal) {
+                        closeModal(modal);
+                    } else {
+                        closeAllModals();
+                    }
+                }
+            );
+        }
+    );
+
+
+    /* =====================================================
+       MODAL OVERLAY
+    ===================================================== */
+
+    $$(".modal").forEach(modal => {
+
+        modal.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target.classList.contains(
+                        "modal-overlay"
+                    )
+                ) {
+                    closeModal(modal);
+                }
+            }
+        );
+    });
+
+
+    /* =====================================================
+       ESC
+    ===================================================== */
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (event.key === "Escape") {
+                closeAllModals();
+            }
+        }
+    );
+
+
+    /* =====================================================
+       TOPIC MODAL
+    ===================================================== */
+
+    function openTopic(topicKey) {
+
+        if (
+            !topicModal ||
+            !topicModalContent
+        ) {
+            return;
+        }
+
+        const topic =
+            topics[topicKey];
+
+        if (!topic) {
+            return;
+        }
+
+        const content =
+            topic[currentLanguage] || topic.ar;
+
+        topicModalContent.innerHTML = `
+
+            <div class="topic-modal-inner">
+
+                <span class="section-kicker">
+                    ${
+                        currentLanguage === "ar"
+                            ? "توعية نفسية"
+                            : "Mental Health Education"
+                    }
+                </span>
+
+                <h2>
+                    ${content.title}
+                </h2>
+
+                <p>
+                    ${content.description}
+                </p>
+
+                ${
+                    content.source.startsWith("http")
+                        ? `
+                            <a
+                                href="${content.source}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="topic-source"
+                            >
+                                ${
+                                    currentLanguage === "ar"
+                                        ? "المصدر"
+                                        : "Source"
+                                }
+                            </a>
+                        `
+                        : `
+                            <span class="topic-source">
+                                ${content.source}
+                            </span>
+                        `
+                }
+
+            </div>
+        `;
+
+        openModal(topicModal);
+    }
+
+
+    $$("[data-topic]").forEach(card => {
+
+        card.addEventListener(
+            "click",
+            () => {
+
+                const topic =
+                    card.dataset.topic;
+
+                if (topic) {
+                    openTopic(topic);
+                }
+            }
+        );
+    });
+
+
+    /* =====================================================
+       PROVIDER MODAL
+       Only elements intended to OPEN provider profile
+       should use data-provider without a booking trigger.
+    ===================================================== */
+
+    function openProvider(providerValue) {
+
+        if (
+            !providerModal ||
+            !providerModalContent
+        ) {
+            return;
+        }
+
+        const slug =
+            normalizeProviderSlug(providerValue);
+
+        const provider =
+            providers[slug];
+
+        if (!provider) {
+            return;
+        }
+
+        const name =
+            currentLanguage === "ar"
+                ? provider.nameAr
+                : provider.nameEn;
+
+        const role =
+            currentLanguage === "ar"
+                ? provider.roleAr
+                : provider.roleEn;
+
+        const bio =
+            currentLanguage === "ar"
+                ? provider.bioAr
+                : provider.bioEn;
+
+
+        providerModalContent.innerHTML = `
+
+            <div class="provider-modal-inner">
+
+                <span class="section-kicker">
+                    ${role}
+                </span>
+
+                <h2>
+                    ${name}
+                </h2>
+
+                <p>
+                    ${bio}
+                </p>
+
+                <button
+                    type="button"
+                    class="btn btn-primary provider-booking-btn"
+                    data-open-booking
+                    data-provider="${slug}"
+                >
+                    ${
+                        currentLanguage === "ar"
+                            ? "احجز جلسة"
+                            : "Book a Session"
+                    }
+                </button>
+
+            </div>
+        `;
+
+        openModal(providerModal);
+
+
+        const bookingButton =
+            $(
+                ".provider-booking-btn",
+                providerModalContent
+            );
+
+        if (bookingButton) {
+
+            bookingButton.addEventListener(
+                "click",
+                event => {
+
+                    event.preventDefault();
+
+                    closeModal(providerModal);
+
+                    goToBooking(slug);
+                }
+            );
+        }
+    }
+
+
+    /*
+       Provider profile triggers:
+       Only elements explicitly marked with
+       data-open-provider should open the modal.
+
+       This prevents booking buttons from accidentally
+       opening the provider modal.
+    */
+
+    $$("[data-open-provider]").forEach(button => {
+
+        button.addEventListener(
+            "click",
+            event => {
+
+                event.preventDefault();
+
+                const provider =
+                    button.dataset.openProvider ||
+                    button.dataset.provider ||
+                    "";
+
+                openProvider(provider);
+            }
+        );
+    });
+
+
+    /* =====================================================
+       ASSESSMENT
+    ===================================================== */
+
+    const assessmentData = [
+
+        {
+            ar: "خلال الأسبوعين الماضيين، كم مرة شعرت بالتوتر أو القلق؟",
+            en: "During the last two weeks, how often have you felt anxious or stressed?"
+        },
+
+        {
+            ar: "كم مرة شعرت بانخفاض في المزاج أو فقدان الاهتمام بالأشياء؟",
+            en: "How often have you experienced low mood or loss of interest?"
+        },
+
+        {
+            ar: "كم مرة واجهت صعوبة في النوم أو الراحة؟",
+            en: "How often have you had difficulty sleeping or resting?"
+        },
+
+        {
+            ar: "كم مرة شعرت أن مشاعرك أصبحت صعبة التحكم؟",
+            en: "How often have your emotions felt difficult to manage?"
+        },
+
+        {
+            ar: "كم مرة أثرت الضغوط النفسية على حياتك اليومية؟",
+            en: "How often have psychological stressors affected your daily life?"
+        },
+
+        {
+            ar: "كم مرة شعرت أنك تحتاج إلى مساحة آمنة للتحدث مع شخص متخصص؟",
+            en: "How often have you felt that you need a safe space to talk to a professional?"
+        }
+    ];
+
+
+    function renderAssessment() {
+
+        if (!assessmentQuestions) {
+            return;
+        }
+
+        assessmentQuestions.innerHTML = "";
+
+        assessmentData.forEach(
+            (question, index) => {
+
+                const number = index + 1;
+
+                const text =
+                    currentLanguage === "ar"
+                        ? question.ar
+                        : question.en;
+
+                assessmentQuestions.insertAdjacentHTML(
+                    "beforeend",
+                    `
+
+                    <div
+                        class="assessment-question"
+                        data-question="${number}"
+                    >
+
+                        <h3>
+                            ${number}. ${text}
+                        </h3>
+
+                        <div class="assessment-options">
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="assessment-${number}"
+                                    value="0"
+                                >
+
+                                <span>
+                                    ${
+                                        currentLanguage === "ar"
+                                            ? "أبدًا"
+                                            : "Not at all"
+                                    }
+                                </span>
+                            </label>
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="assessment-${number}"
+                                    value="1"
+                                >
+
+                                <span>
+                                    ${
+                                        currentLanguage === "ar"
+                                            ? "أحيانًا"
+                                            : "Sometimes"
+                                    }
+                                </span>
+                            </label>
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="assessment-${number}"
+                                    value="2"
+                                >
+
+                                <span>
+                                    ${
+                                        currentLanguage === "ar"
+                                            ? "غالبًا"
+                                            : "Often"
+                                    }
+                                </span>
+                            </label>
+
+                        </div>
+
+                    </div>
+                    `
+                );
+            }
+        );
+    }
+
+
+    if (assessmentButton) {
+
+        assessmentButton.addEventListener(
+            "click",
+            () => {
+
+                renderAssessment();
+
+                if (assessmentResult) {
+                    assessmentResult.innerHTML = "";
+                }
+
+                openModal(assessmentModal);
+            }
+        );
+    }
+
+
+    /* =====================================================
+       ASSESSMENT CALCULATION
+    ===================================================== */
+
+    if (calculateAssessment) {
+
+        calculateAssessment.addEventListener(
+            "click",
+            () => {
+
+                let score = 0;
+                let answered = 0;
+
+                assessmentData.forEach(
+                    (_, index) => {
+
+                        const selected =
+                            document.querySelector(
+                                `input[name="assessment-${index + 1}"]:checked`
+                            );
+
+                        if (selected) {
+
+                            score += Number(
+                                selected.value
+                            );
+
+                            answered++;
+                        }
+                    }
+                );
+
+
+                if (
+                    answered <
+                    assessmentData.length
+                ) {
+
+                    if (assessmentResult) {
+
+                        assessmentResult.innerHTML = `
+
+                            <div class="assessment-result">
+
+                                <h3>
+                                    ${
+                                        currentLanguage === "ar"
+                                            ? "يرجى الإجابة عن جميع الأسئلة"
+                                            : "Please answer all questions"
+                                    }
+                                </h3>
+
+                                <p>
+                                    ${
+                                        currentLanguage === "ar"
+                                            ? "أكمل الأسئلة أولًا للحصول على النتيجة الأولية."
+                                            : "Please complete all questions to receive the initial result."
+                                    }
+                                </p>
+
+                            </div>
+                        `;
+                    }
+
+                    return;
+                }
+
+
+                let title;
+                let message;
+
+
+                if (score <= 3) {
+
+                    title =
+                        currentLanguage === "ar"
+                            ? "مؤشرات منخفضة حاليًا"
+                            : "Low indicators at the moment";
+
+                    message =
+                        currentLanguage === "ar"
+                            ? "الإجابات الحالية لا تشير إلى مستوى مرتفع من الضيق النفسي. يمكنك طلب الدعم في أي وقت إذا شعرت أنك بحاجة إليه."
+                            : "Your current responses do not indicate a high level of psychological distress. You can still seek support whenever you feel you need it.";
+
+                } else if (score <= 8) {
+
+                    title =
+                        currentLanguage === "ar"
+                            ? "قد يكون من المفيد الحصول على دعم"
+                            : "Support may be helpful";
+
+                    message =
+                        currentLanguage === "ar"
+                            ? "تشير إجاباتك إلى وجود بعض الضغوط أو الصعوبات النفسية. الحديث مع متخصص قد يساعدك على فهم ما تمر به."
+                            : "Your responses suggest some psychological stress or difficulties. Talking with a professional may help you understand what you are experiencing.";
+
+                } else {
+
+                    title =
+                        currentLanguage === "ar"
+                            ? "قد تحتاج إلى مساحة دعم متخصصة"
+                            : "Professional support may be helpful";
+
+                    message =
+                        currentLanguage === "ar"
+                            ? "تشير إجاباتك إلى وجود مستوى ملحوظ من الضيق النفسي. التحدث مع متخصص نفسي قد يساعدك في الحصول على تقييم ودعم مناسبين."
+                            : "Your responses suggest a noticeable level of psychological distress. Speaking with a mental health professional may help you receive appropriate assessment and support.";
+                }
+
+
+                if (assessmentResult) {
+
+                    assessmentResult.innerHTML = `
+
+                        <div class="assessment-result">
+
+                            <span class="section-kicker">
+                                ${
+                                    currentLanguage === "ar"
+                                        ? "نتيجة أولية"
+                                        : "Initial Result"
+                                }
+                            </span>
+
+                            <h3>
+                                ${title}
+                            </h3>
+
+                            <p>
+                                ${message}
+                            </p>
+
+                            <small>
+                                ${
+                                    currentLanguage === "ar"
+                                        ? "هذا الاستبيان توعوي وليس تشخيصًا طبيًا."
+                                        : "This questionnaire is educational and is not a medical diagnosis."
+                                }
+                            </small>
+
+                            <div style="margin-top: 24px;">
+
+                                <button
+                                    type="button"
+                                    class="btn btn-primary assessment-booking-btn"
+                                >
+                                    ${
+                                        currentLanguage === "ar"
+                                            ? "احجز جلسة"
+                                            : "Book a Session"
+                                    }
+                                </button>
+
+                            </div>
+
+                        </div>
+                    `;
+
+
+                    const bookingButton =
+                        $(
+                            ".assessment-booking-btn",
+                            assessmentResult
+                        );
+
+                    if (bookingButton) {
+
+                        bookingButton.addEventListener(
+                            "click",
+                            () => {
+
+                                closeModal(
+                                    assessmentModal
+                                );
+
+                                goToBooking();
+                            }
+                        );
+                    }
+                }
+            }
+        );
+    }
+
+
+    /* =====================================================
+       FAQ
+    ===================================================== */
+
+    $$(".faq-item").forEach(item => {
+
+        const question =
+            $(".faq-question", item);
+
+        if (!question) {
+            return;
+        }
+
+        question.addEventListener(
+            "click",
+            () => {
+
+                const wasActive =
+                    item.classList.contains("active") ||
+                    item.classList.contains("open");
+
+
+                $$(".faq-item").forEach(other => {
+
+                    other.classList.remove("active");
+                    other.classList.remove("open");
+                });
+
+
+                if (!wasActive) {
+
+                    item.classList.add("active");
+                }
+            }
+        );
+    });
+
+
+    /* =====================================================
+       HEADER SCROLL
+    ===================================================== */
+
+    const siteHeader =
+        $(".site-header");
+
+    function updateHeader() {
+
+        if (!siteHeader) {
+            return;
+        }
+
+        siteHeader.classList.toggle(
+            "scrolled",
+            window.scrollY > 20
+        );
+    }
+
+    window.addEventListener(
+        "scroll",
+        updateHeader,
+        { passive: true }
+    );
+
+    updateHeader();
+
+
+    /* =====================================================
+       ACTIVE NAVIGATION
+    ===================================================== */
+
+    const sections =
+        $$("main section[id]");
+
+    const navLinks =
+        $$(".nav-link");
+
+
+    if (
+        sections.length &&
+        navLinks.length &&
+        "IntersectionObserver" in window
+    ) {
+
+        const observer =
+            new IntersectionObserver(
+                entries => {
+
+                    entries.forEach(entry => {
+
+                        if (!entry.isIntersecting) {
+                            return;
+                        }
+
+                        const id =
+                            entry.target.id;
+
+                        navLinks.forEach(link => {
+
+                            const href =
+                                link.getAttribute("href");
+
+                            link.classList.toggle(
+                                "active",
+                                href === `#${id}`
+                            );
+                        });
+                    });
+                },
+                {
+                    rootMargin:
+                        "-30% 0px -60% 0px",
+                    threshold: 0
+                }
+            );
+
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+    }
+
+
+    /* =====================================================
+       CLICK OUTSIDE MOBILE MENU
+    ===================================================== */
+
+    document.addEventListener(
+        "click",
+        event => {
+
+            if (
+                !mainNav ||
+                !menuToggle
+            ) {
+                return;
+            }
+
+            if (
+                mainNav.classList.contains("open") &&
+                !mainNav.contains(event.target) &&
+                !menuToggle.contains(event.target)
+            ) {
+
+                closeMobileMenu();
+            }
+        }
+    );
+
+
+    /* =====================================================
+       INITIALIZATION
+    ===================================================== */
+
+    setLanguage(currentLanguage);
+
+});
