@@ -1,35 +1,537 @@
 /* =========================================================
-   MARIAM MAHMOUD
-   Luxury Editorial Website
+   MindCare Mental Wellness
    Main JavaScript
-   ========================================================= */
+   Prepared By: Eng Ahmad Ramadan
+========================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
-    "use strict";
 
     /* =====================================================
-       ELEMENTS
+       CONFIGURATION
     ===================================================== */
 
-    const body = document.body;
-    const siteHeader = document.getElementById("siteHeader");
-    const menuToggle = document.getElementById("menuToggle");
-    const navbar = document.getElementById("navbar");
-    const backToTop = document.getElementById("backToTop");
-    const languageSwitcher = document.getElementById("languageSwitcher");
-    const currentYear = document.getElementById("currentYear");
+    const BOOKING_PAGE = "booking.html";
 
-    const navLinks = document.querySelectorAll(".nav-link");
-    const revealElements = document.querySelectorAll(".reveal");
-    const sections = document.querySelectorAll("main section[id]");
+    let currentLanguage =
+        localStorage.getItem("mindcare-language") || "ar";
+
+    /* =====================================================
+       HELPERS
+    ===================================================== */
+
+    const $ = (selector, parent = document) =>
+        parent.querySelector(selector);
+
+    const $$ = (selector, parent = document) =>
+        [...parent.querySelectorAll(selector)];
 
 
     /* =====================================================
-       CURRENT YEAR
+       DOM ELEMENTS
     ===================================================== */
 
-    if (currentYear) {
-        currentYear.textContent = new Date().getFullYear();
+    const languageSwitch = $("#languageSwitch");
+
+    const menuToggle = $(".menu-toggle");
+    const mainNav = $(".main-nav");
+
+    const topicModal = $("#topicModal");
+    const providerModal = $("#providerModal");
+    const bookingModal = $("#bookingModal");
+    const assessmentModal = $("#assessmentModal");
+
+    const topicModalContent = $("#topicModalContent");
+    const providerModalContent = $("#providerModalContent");
+
+    const bookingForm = $("#bookingForm");
+    const bookingProvider = $("#bookingProvider");
+
+    const assessmentButton = $("#assessmentButton");
+    const assessmentQuestions = $("#assessmentQuestions");
+    const assessmentResult = $("#assessmentResult");
+    const calculateAssessment = $("#calculateAssessment");
+
+
+    /* =====================================================
+       TOPIC DATA
+    ===================================================== */
+
+    const topics = {
+
+        anxiety: {
+            ar: {
+                title: "القلق والتوتر",
+                description:
+                    "القلق شعور طبيعي، لكنه قد يصبح مرهقًا عندما يكون مستمرًا أو يؤثر على الحياة اليومية. الدعم النفسي يمكن أن يساعدك على فهم مصادر القلق وتطوير طرق أكثر توازنًا للتعامل معه.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/anxiety-disorders"
+            },
+
+            en: {
+                title: "Anxiety & Stress",
+                description:
+                    "Anxiety is a natural response, but it can become overwhelming when it is persistent or interferes with daily life. Psychological support can help you understand its sources and develop healthier coping strategies.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/anxiety-disorders"
+            }
+        },
+
+        depression: {
+            ar: {
+                title: "الاكتئاب",
+                description:
+                    "الاكتئاب قد يؤثر على المزاج والطاقة والنوم والتركيز والعلاقات. طلب الدعم النفسي خطوة مهمة لفهم ما تمر به والعمل على تحسين جودة حياتك.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/depression"
+            },
+
+            en: {
+                title: "Depression",
+                description:
+                    "Depression can affect mood, energy, sleep, concentration and relationships. Seeking psychological support can be an important step toward understanding what you are experiencing and improving your quality of life.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/depression"
+            }
+        },
+
+        panic: {
+            ar: {
+                title: "نوبات الهلع",
+                description:
+                    "نوبات الهلع قد تظهر بصورة مفاجئة مع خوف شديد وأعراض جسدية مزعجة. العلاج والدعم المتخصص يمكن أن يساعدا في فهم هذه التجربة والتعامل معها.",
+                source:
+                    "https://www.nimh.nih.gov/health/publications/panic-disorder-when-fear-overwhelms"
+            },
+
+            en: {
+                title: "Panic Attacks",
+                description:
+                    "Panic attacks can appear suddenly with intense fear and uncomfortable physical symptoms. Professional support can help you understand the experience and develop ways to manage it.",
+                source:
+                    "https://www.nimh.nih.gov/health/publications/panic-disorder-when-fear-overwhelms"
+            }
+        },
+
+        ocd: {
+            ar: {
+                title: "الوسواس القهري",
+                description:
+                    "الوسواس القهري قد يتضمن أفكارًا متكررة ومزعجة أو سلوكيات قهرية يصعب التحكم بها. التقييم والعلاج المتخصص يمكن أن يساعدا في التعامل مع الأعراض.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/obsessive-compulsive-disorder-ocd"
+            },
+
+            en: {
+                title: "OCD",
+                description:
+                    "OCD may involve recurring unwanted thoughts or repetitive behaviors that can feel difficult to control. Professional assessment and treatment can help manage symptoms.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/obsessive-compulsive-disorder-ocd"
+            }
+        },
+
+        trauma: {
+            ar: {
+                title: "الصدمات النفسية",
+                description:
+                    "التجارب الصعبة أو الصادمة قد تترك آثارًا مستمرة على المشاعر والسلوك والعلاقات. الحصول على مساحة آمنة ودعم متخصص قد يساعد في التعامل مع آثار هذه التجارب.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/post-traumatic-stress-disorder-ptsd"
+            },
+
+            en: {
+                title: "Trauma",
+                description:
+                    "Difficult or traumatic experiences can have lasting effects on emotions, behavior and relationships. A safe space and professional support may help with the effects of these experiences.",
+                source:
+                    "https://www.nimh.nih.gov/health/topics/post-traumatic-stress-disorder-ptsd"
+            }
+        },
+
+        sleep: {
+            ar: {
+                title: "النوم",
+                description:
+                    "مشكلات النوم قد تؤثر على الطاقة والمزاج والتركيز والصحة النفسية. فهم العوامل المرتبطة بالنوم يمكن أن يكون بداية لتحسين نمط الحياة.",
+                source:
+                    "https://www.nhlbi.nih.gov/health/sleep"
+            },
+
+            en: {
+                title: "Sleep",
+                description:
+                    "Sleep difficulties can affect energy, mood, concentration and mental well-being. Understanding the factors connected to sleep can be a starting point for healthier habits.",
+                source:
+                    "https://www.nhlbi.nih.gov/health/sleep"
+            }
+        },
+
+        addiction: {
+            ar: {
+                title: "الإدمان والسلوكيات القهرية",
+                description:
+                    "التعامل مع الإدمان أو السلوكيات القهرية يحتاج إلى فهم دون وصم، ودعم مناسب يساعد على بناء خطوات أكثر أمانًا واستقرارًا.",
+                source:
+                    "https://www.samhsa.gov/find-help/national-helpline"
+            },
+
+            en: {
+                title: "Addiction & Compulsive Behaviors",
+                description:
+                    "Addiction and compulsive behaviors require understanding without stigma. Appropriate support can help create safer and more sustainable steps toward recovery.",
+                source:
+                    "https://www.samhsa.gov/find-help/national-helpline"
+            }
+        },
+
+        "self-esteem": {
+            ar: {
+                title: "تقدير الذات",
+                description:
+                    "تقدير الذات يؤثر على طريقة رؤيتنا لأنفسنا وعلى علاقاتنا وقراراتنا. العمل على فهم الأفكار السلبية وبناء صورة أكثر توازنًا عن الذات قد يكون مفيدًا.",
+                source:
+                    "MindCare Educational Resource"
+            },
+
+            en: {
+                title: "Self-Esteem",
+                description:
+                    "Self-esteem affects how we see ourselves, our relationships and our decisions. Understanding negative thought patterns and developing a more balanced self-image can be helpful.",
+                source:
+                    "MindCare Educational Resource"
+            }
+        },
+
+        relationships: {
+            ar: {
+                title: "العلاقات",
+                description:
+                    "العلاقات الصحية تحتاج إلى التواصل والحدود والاحترام المتبادل. الدعم النفسي يمكن أن يساعد على فهم أنماط العلاقات وتحسين التواصل.",
+                source:
+                    "MindCare Educational Resource"
+            },
+
+            en: {
+                title: "Relationships",
+                description:
+                    "Healthy relationships involve communication, boundaries and mutual respect. Psychological support can help explore relationship patterns and improve communication.",
+                source:
+                    "MindCare Educational Resource"
+            }
+        },
+
+        family: {
+            ar: {
+                title: "العائلة",
+                description:
+                    "التحديات العائلية قد تؤثر على المشاعر والاستقرار النفسي. فهم أنماط التواصل ووضع حدود صحية قد يساعد على بناء علاقات أكثر توازنًا.",
+                source:
+                    "MindCare Educational Resource"
+            },
+
+            en: {
+                title: "Family",
+                description:
+                    "Family challenges can affect emotional well-being. Understanding communication patterns and establishing healthy boundaries can support more balanced relationships.",
+                source:
+                    "MindCare Educational Resource"
+            }
+        },
+
+        communication: {
+            ar: {
+                title: "التواصل",
+                description:
+                    "التواصل الواضح يساعد على التعبير عن الاحتياجات والمشاعر بطريقة أكثر صحة، ويقلل من سوء الفهم والصراعات المتكررة.",
+                source:
+                    "MindCare Educational Resource"
+            },
+
+            en: {
+                title: "Communication",
+                description:
+                    "Clear communication helps people express needs and emotions in healthier ways while reducing misunderstandings and recurring conflicts.",
+                source:
+                    "MindCare Educational Resource"
+            }
+        }
+    };
+
+
+    /* =====================================================
+       PROVIDERS
+    ===================================================== */
+
+    const providers = {
+
+        tasbeh: {
+            nameAr: "تسبيح محمد",
+            nameEn: "Tasbeh Mohamed",
+
+            roleAr: "أخصائية نفسية إكلينيكية",
+            roleEn: "Clinical Psychologist",
+
+            bioAr:
+                "أخصائية نفسية إكلينيكية (Clinical Psychologist) متخصصة في تقديم الدعم والتقييم النفسي والعلاج الإكلينيكي. تركز على مساعدة الأفراد في التعامل مع مشاعر القلق، التنظيم الانفعالي، الضغوط النفسية، وتحديات العلاقات، وتطوير مهارات التكيف والنمو الذاتي.",
+
+            bioEn:
+                "A Clinical Psychologist specializing in psychological support, assessment, and clinical therapy. Her work focuses on helping individuals manage anxiety, emotional regulation, psychological stress, relationship challenges, coping skills, and personal growth."
+        },
+
+        mariam: {
+            nameAr: "مريم محمود",
+            nameEn: "Mariam Mahmoud",
+
+            roleAr: "أخصائية نفسية إكلينيكية",
+            roleEn: "Clinical Psychologist",
+
+            bioAr:
+                "أخصائية نفسية إكلينيكية (Clinical Psychologist) تركز على تقديم الدعم النفسي للأفراد لمساعدتهم على التعامل مع التوتر اليومي، رفع تقدير الذات، تجاوز التحديات الحياتية، وبناء علاقات صحية ومتوازنة.",
+
+            bioEn:
+                "A Clinical Psychologist focused on supporting individuals in managing daily stress, improving self-esteem, navigating life challenges, and building healthy and balanced relationships."
+        }
+    };
+
+
+    /* =====================================================
+       PROVIDER SLUG NORMALIZATION
+    ===================================================== */
+
+    function normalizeProviderSlug(value) {
+
+        if (!value) {
+            return "";
+        }
+
+        const normalized = String(value)
+            .trim()
+            .toLowerCase();
+
+        const map = {
+
+            "tasbeh": "tasbeh",
+            "tasbeh-mohamed": "tasbeh",
+            "tasbeh mohamed": "tasbeh",
+            "تسبيح": "tasbeh",
+            "تسبيح محمد": "tasbeh",
+
+            "mariam": "mariam",
+            "mariam-mahmoud": "mariam",
+            "mariam mahmoud": "mariam",
+            "مريم": "mariam",
+            "مريم محمود": "mariam"
+        };
+
+        return map[normalized] || "";
+    }
+
+
+    /* =====================================================
+       FIREBASE BOOKING NAVIGATION
+    ===================================================== */
+
+    function goToBooking(provider = "") {
+
+        const providerSlug =
+            normalizeProviderSlug(provider);
+
+        let bookingURL = BOOKING_PAGE;
+
+        if (providerSlug) {
+            bookingURL +=
+                `?provider=${encodeURIComponent(providerSlug)}`;
+        }
+
+        window.location.href = bookingURL;
+    }
+
+
+    /* =====================================================
+       BOOKING BUTTONS
+       IMPORTANT:
+       No WhatsApp booking here.
+    ===================================================== */
+
+    function bindBookingLinks() {
+
+        $$("[data-open-booking]").forEach(button => {
+
+            button.addEventListener("click", event => {
+
+                event.preventDefault();
+
+                const provider =
+                    button.dataset.provider ||
+                    button.dataset.providerName ||
+                    "";
+
+                if (mainNav) {
+                    mainNav.classList.remove("open");
+                }
+
+                if (menuToggle) {
+                    menuToggle.classList.remove("active");
+                    menuToggle.setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
+                }
+
+                goToBooking(provider);
+            });
+
+        });
+    }
+
+
+    /* =====================================================
+       LEGACY BOOKING FORM COMPATIBILITY
+       If old booking modal still exists, it redirects to
+       the Firebase booking page instead of WhatsApp.
+    ===================================================== */
+
+    if (bookingForm) {
+
+        bookingForm.addEventListener("submit", event => {
+
+            event.preventDefault();
+
+            const provider =
+                bookingProvider?.value || "";
+
+            goToBooking(provider);
+        });
+    }
+
+
+    /* =====================================================
+       LANGUAGE SYSTEM
+    ===================================================== */
+
+    function setLanguage(language) {
+
+        currentLanguage =
+            language === "en" ? "en" : "ar";
+
+        localStorage.setItem(
+            "mindcare-language",
+            currentLanguage
+        );
+
+        document.documentElement.lang =
+            currentLanguage;
+
+        document.documentElement.dir =
+            currentLanguage === "ar" ? "rtl" : "ltr";
+
+        document.body.classList.toggle(
+            "english-mode",
+            currentLanguage === "en"
+        );
+
+
+        /* ---------------------------------------------
+           Elements with data-ar / data-en
+        --------------------------------------------- */
+
+        $$("[data-ar][data-en]").forEach(element => {
+
+            const value =
+                element.getAttribute(
+                    `data-${currentLanguage}`
+                );
+
+            if (value !== null) {
+                element.textContent = value;
+            }
+        });
+
+
+        /* ---------------------------------------------
+           Language Button
+        --------------------------------------------- */
+
+        if (languageSwitch) {
+
+            languageSwitch.textContent =
+                currentLanguage === "ar"
+                    ? "EN"
+                    : "AR";
+
+            languageSwitch.setAttribute(
+                "aria-label",
+                currentLanguage === "ar"
+                    ? "Switch to English"
+                    : "التبديل إلى العربية"
+            );
+        }
+
+
+        /* ---------------------------------------------
+           Navigation
+        --------------------------------------------- */
+
+        const navLabels = {
+
+            ar: [
+                "الرئيسية",
+                "كيف تعمل",
+                "الصحة النفسية",
+                "المختصون",
+                "الأسئلة الشائعة"
+            ],
+
+            en: [
+                "Home",
+                "How It Works",
+                "Mental Health",
+                "Specialists",
+                "FAQ"
+            ]
+        };
+
+        const navLinks = $$(".nav-link");
+
+        navLinks.forEach((link, index) => {
+
+            const arText =
+                link.getAttribute("data-ar");
+
+            const enText =
+                link.getAttribute("data-en");
+
+            if (currentLanguage === "ar" && arText) {
+                link.textContent = arText;
+                return;
+            }
+
+            if (currentLanguage === "en" && enText) {
+                link.textContent = enText;
+                return;
+            }
+
+            if (navLabels[currentLanguage][index]) {
+                link.textContent =
+                    navLabels[currentLanguage][index];
+            }
+        });
+    }
+
+
+    if (languageSwitch) {
+
+        languageSwitch.addEventListener(
+            "click",
+            () => {
+
+                setLanguage(
+                    currentLanguage === "ar"
+                        ? "en"
+                        : "ar"
+                );
+            }
+        );
     }
 
 
@@ -37,1446 +539,896 @@ document.addEventListener("DOMContentLoaded", () => {
        MOBILE MENU
     ===================================================== */
 
-    function closeMenu() {
-        if (!navbar || !menuToggle) return;
+    if (menuToggle && mainNav) {
 
-        navbar.classList.remove("active");
-        menuToggle.classList.remove("active");
+        menuToggle.addEventListener(
+            "click",
+            () => {
 
-        menuToggle.setAttribute("aria-expanded", "false");
-    }
+                const isOpen =
+                    mainNav.classList.toggle("open");
 
-    function openMenu() {
-        if (!navbar || !menuToggle) return;
+                menuToggle.classList.toggle(
+                    "active",
+                    isOpen
+                );
 
-        navbar.classList.add("active");
-        menuToggle.classList.add("active");
-
-        menuToggle.setAttribute("aria-expanded", "true");
-    }
-
-    if (menuToggle && navbar) {
-
-        menuToggle.setAttribute("aria-expanded", "false");
-
-        menuToggle.addEventListener("click", () => {
-
-            const isOpen = navbar.classList.contains("active");
-
-            if (isOpen) {
-                closeMenu();
-            } else {
-                openMenu();
+                menuToggle.setAttribute(
+                    "aria-expanded",
+                    String(isOpen)
+                );
             }
+        );
 
+
+        $$(".nav-link", mainNav).forEach(link => {
+
+            link.addEventListener(
+                "click",
+                () => {
+
+                    mainNav.classList.remove("open");
+
+                    menuToggle.classList.remove(
+                        "active"
+                    );
+
+                    menuToggle.setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
+                }
+            );
         });
-
     }
 
 
     /* =====================================================
-       CLOSE MOBILE MENU AFTER CLICK
+       MODAL HELPERS
     ===================================================== */
 
-    navLinks.forEach(link => {
+    function openModal(modal) {
 
-        link.addEventListener("click", () => {
-            closeMenu();
-        });
-
-    });
-
-
-    /* =====================================================
-       CLOSE MENU WHEN CLICKING OUTSIDE
-    ===================================================== */
-
-    document.addEventListener("click", event => {
-
-        if (!navbar || !menuToggle) return;
-
-        const clickedInsideMenu = navbar.contains(event.target);
-        const clickedToggle = menuToggle.contains(event.target);
-
-        if (
-            navbar.classList.contains("active") &&
-            !clickedInsideMenu &&
-            !clickedToggle
-        ) {
-            closeMenu();
+        if (!modal) {
+            return;
         }
 
+        modal.classList.add("active");
+
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        document.body.classList.add(
+            "modal-open"
+        );
+    }
+
+
+    function closeModal(modal) {
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove("active");
+
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        if (!$(".modal.active")) {
+
+            document.body.classList.remove(
+                "modal-open"
+            );
+        }
+    }
+
+
+    function closeAllModals() {
+
+        $$(".modal.active").forEach(modal => {
+
+            modal.classList.remove("active");
+
+            modal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+        });
+
+        document.body.classList.remove(
+            "modal-open"
+        );
+    }
+
+
+    /* =====================================================
+       MODAL CLOSE BUTTONS
+    ===================================================== */
+
+    $$(".modal-close").forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const modal =
+                    button.closest(".modal");
+
+                closeModal(modal);
+            }
+        );
     });
 
 
     /* =====================================================
-       HEADER SCROLL EFFECT
+       MODAL OVERLAY CLOSE
     ===================================================== */
+
+    $$(".modal").forEach(modal => {
+
+        modal.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target.classList.contains(
+                        "modal-overlay"
+                    )
+                ) {
+                    closeModal(modal);
+                }
+            }
+        );
+    });
+
+
+    /* =====================================================
+       ESCAPE KEY
+    ===================================================== */
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (event.key === "Escape") {
+                closeAllModals();
+            }
+        }
+    );
+
+
+    /* =====================================================
+       TOPIC MODAL
+    ===================================================== */
+
+    function openTopic(topicKey) {
+
+        if (!topicModal || !topicModalContent) {
+            return;
+        }
+
+        const topic =
+            topics[topicKey];
+
+        if (!topic) {
+            return;
+        }
+
+        const content =
+            topic[currentLanguage] ||
+            topic.ar;
+
+        topicModalContent.innerHTML = `
+
+            <div class="topic-modal-inner">
+
+                <span class="section-kicker">
+                    ${currentLanguage === "ar"
+                        ? "توعية نفسية"
+                        : "Mental Health Education"}
+                </span>
+
+                <h2>${content.title}</h2>
+
+                <p>
+                    ${content.description}
+                </p>
+
+                ${
+                    content.source.startsWith("http")
+                        ? `
+                            <a
+                                href="${content.source}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="topic-source"
+                            >
+                                ${
+                                    currentLanguage === "ar"
+                                        ? "المصدر"
+                                        : "Source"
+                                }
+                            </a>
+                          `
+                        : `
+                            <span class="topic-source">
+                                ${content.source}
+                            </span>
+                          `
+                }
+
+            </div>
+        `;
+
+        openModal(topicModal);
+    }
+
+
+    /* =====================================================
+       TOPIC CARDS
+    ===================================================== */
+
+    $$(".topic-card").forEach(card => {
+
+        card.addEventListener(
+            "click",
+            () => {
+
+                const topic =
+                    card.dataset.topic;
+
+                if (topic) {
+                    openTopic(topic);
+                }
+            }
+        );
+    });
+
+
+    /* =====================================================
+       PROVIDER MODAL
+    ===================================================== */
+
+    function openProvider(providerKey) {
+
+        if (!providerModal || !providerModalContent) {
+            return;
+        }
+
+        const slug =
+            normalizeProviderSlug(providerKey);
+
+        const provider =
+            providers[slug];
+
+        if (!provider) {
+            return;
+        }
+
+        const name =
+            currentLanguage === "ar"
+                ? provider.nameAr
+                : provider.nameEn;
+
+        const role =
+            currentLanguage === "ar"
+                ? provider.roleAr
+                : provider.roleEn;
+
+        const bio =
+            currentLanguage === "ar"
+                ? provider.bioAr
+                : provider.bioEn;
+
+        providerModalContent.innerHTML = `
+
+            <div class="provider-modal-inner">
+
+                <span class="section-kicker">
+                    ${role}
+                </span>
+
+                <h2>${name}</h2>
+
+                <p>
+                    ${bio}
+                </p>
+
+                <button
+                    type="button"
+                    class="btn btn-primary provider-booking-btn"
+                    data-provider="${slug}"
+                >
+                    ${
+                        currentLanguage === "ar"
+                            ? "احجز جلسة"
+                            : "Book a Session"
+                    }
+                </button>
+
+            </div>
+        `;
+
+        openModal(providerModal);
+
+
+        const bookingButton =
+            $(".provider-booking-btn", providerModalContent);
+
+        if (bookingButton) {
+
+            bookingButton.addEventListener(
+                "click",
+                () => {
+
+                    closeModal(providerModal);
+
+                    goToBooking(slug);
+                }
+            );
+        }
+    }
+
+
+    /* =====================================================
+       PROVIDER BUTTONS
+    ===================================================== */
+
+    $$("[data-provider]").forEach(button => {
+
+        if (
+            button.hasAttribute(
+                "data-open-booking"
+            )
+        ) {
+            return;
+        }
+
+        button.addEventListener(
+            "click",
+            event => {
+
+                const provider =
+                    button.dataset.provider;
+
+                if (!provider) {
+                    return;
+                }
+
+                /*
+                 * If the element is an actual booking CTA,
+                 * let bindBookingLinks() handle it.
+                 */
+                if (
+                    button.hasAttribute(
+                        "data-open-booking"
+                    )
+                ) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                openProvider(provider);
+            }
+        );
+    });
+
+
+    /* =====================================================
+       ASSESSMENT QUESTIONS
+    ===================================================== */
+
+    const assessmentData = [
+
+        {
+            ar: "خلال الأسبوعين الماضيين، كم مرة شعرت بالتوتر أو القلق؟",
+            en: "During the last two weeks, how often have you felt anxious or stressed?"
+        },
+
+        {
+            ar: "كم مرة شعرت بانخفاض في المزاج أو فقدان الاهتمام بالأشياء؟",
+            en: "How often have you experienced low mood or loss of interest?"
+        },
+
+        {
+            ar: "كم مرة واجهت صعوبة في النوم أو الراحة؟",
+            en: "How often have you had difficulty sleeping or resting?"
+        },
+
+        {
+            ar: "كم مرة شعرت أن مشاعرك أصبحت صعبة التحكم؟",
+            en: "How often have your emotions felt difficult to manage?"
+        },
+
+        {
+            ar: "كم مرة أثرت الضغوط النفسية على حياتك اليومية؟",
+            en: "How often have psychological stressors affected your daily life?"
+        },
+
+        {
+            ar: "كم مرة شعرت أنك تحتاج إلى مساحة آمنة للتحدث مع شخص متخصص؟",
+            en: "How often have you felt that you need a safe space to talk to a professional?"
+        }
+    ];
+
+
+    /* =====================================================
+       RENDER ASSESSMENT
+    ===================================================== */
+
+    function renderAssessment() {
+
+        if (!assessmentQuestions) {
+            return;
+        }
+
+        assessmentQuestions.innerHTML = "";
+
+        assessmentData.forEach(
+            (question, index) => {
+
+                const questionNumber =
+                    index + 1;
+
+                const text =
+                    currentLanguage === "ar"
+                        ? question.ar
+                        : question.en;
+
+                const questionHTML = `
+
+                    <div
+                        class="assessment-question"
+                        data-question="${questionNumber}"
+                    >
+
+                        <h3>
+                            ${questionNumber}.
+                            ${text}
+                        </h3>
+
+                        <div class="assessment-options">
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="assessment-${questionNumber}"
+                                    value="0"
+                                >
+
+                                <span>
+                                    ${
+                                        currentLanguage === "ar"
+                                            ? "أبدًا"
+                                            : "Not at all"
+                                    }
+                                </span>
+                            </label>
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="assessment-${questionNumber}"
+                                    value="1"
+                                >
+
+                                <span>
+                                    ${
+                                        currentLanguage === "ar"
+                                            ? "أحيانًا"
+                                            : "Sometimes"
+                                    }
+                                </span>
+                            </label>
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="assessment-${questionNumber}"
+                                    value="2"
+                                >
+
+                                <span>
+                                    ${
+                                        currentLanguage === "ar"
+                                            ? "غالبًا"
+                                            : "Often"
+                                    }
+                                </span>
+                            </label>
+
+                        </div>
+
+                    </div>
+                `;
+
+                assessmentQuestions.insertAdjacentHTML(
+                    "beforeend",
+                    questionHTML
+                );
+            }
+        );
+    }
+
+
+    /* =====================================================
+       OPEN ASSESSMENT
+    ===================================================== */
+
+    if (assessmentButton) {
+
+        assessmentButton.addEventListener(
+            "click",
+            () => {
+
+                renderAssessment();
+
+                if (assessmentResult) {
+                    assessmentResult.innerHTML = "";
+                }
+
+                openModal(assessmentModal);
+            }
+        );
+    }
+
+
+    /* =====================================================
+       CALCULATE ASSESSMENT
+    ===================================================== */
+
+    if (calculateAssessment) {
+
+        calculateAssessment.addEventListener(
+            "click",
+            () => {
+
+                let score = 0;
+                let answered = 0;
+
+                assessmentData.forEach(
+                    (_, index) => {
+
+                        const selected =
+                            document.querySelector(
+                                `input[name="assessment-${index + 1}"]:checked`
+                            );
+
+                        if (selected) {
+
+                            score += Number(
+                                selected.value
+                            );
+
+                            answered++;
+                        }
+                    }
+                );
+
+
+                if (answered < assessmentData.length) {
+
+                    if (assessmentResult) {
+
+                        assessmentResult.innerHTML = `
+
+                            <div class="assessment-result-content">
+
+                                <h3>
+                                    ${
+                                        currentLanguage === "ar"
+                                            ? "يرجى الإجابة عن جميع الأسئلة"
+                                            : "Please answer all questions"
+                                    }
+                                </h3>
+
+                                <p>
+                                    ${
+                                        currentLanguage === "ar"
+                                            ? "أكمل الأسئلة أولًا حتى تحصل على نتيجة أكثر اكتمالًا."
+                                            : "Please complete all questions to receive a more complete result."
+                                    }
+                                </p>
+
+                            </div>
+                        `;
+                    }
+
+                    return;
+                }
+
+
+                let title = "";
+                let message = "";
+
+
+                if (score <= 3) {
+
+                    title =
+                        currentLanguage === "ar"
+                            ? "مؤشرات منخفضة حاليًا"
+                            : "Low indicators at the moment";
+
+                    message =
+                        currentLanguage === "ar"
+                            ? "الإجابات الحالية لا تشير إلى مستوى مرتفع من الضيق النفسي. ومع ذلك، يمكنك طلب الدعم في أي وقت إذا شعرت أنك بحاجة إليه."
+                            : "Your current responses do not indicate a high level of psychological distress. You can still seek support whenever you feel you need it.";
+
+                } else if (score <= 8) {
+
+                    title =
+                        currentLanguage === "ar"
+                            ? "قد يكون من المفيد الحصول على دعم"
+                            : "Support may be helpful";
+
+                    message =
+                        currentLanguage === "ar"
+                            ? "تشير إجاباتك إلى وجود بعض الضغوط أو الصعوبات النفسية. الحديث مع متخصص قد يساعدك على فهم ما تمر به بشكل أفضل."
+                            : "Your responses suggest some psychological stress or difficulties. Talking with a professional may help you understand what you are experiencing.";
+
+                } else {
+
+                    title =
+                        currentLanguage === "ar"
+                            ? "قد تحتاج إلى مساحة دعم متخصصة"
+                            : "Professional support may be helpful";
+
+                    message =
+                        currentLanguage === "ar"
+                            ? "تشير إجاباتك إلى وجود مستوى ملحوظ من الضيق النفسي. ننصح بالتحدث مع متخصص نفسي للحصول على تقييم ودعم مناسبين."
+                            : "Your responses suggest a noticeable level of psychological distress. Consider speaking with a mental health professional for appropriate assessment and support.";
+                }
+
+
+                if (assessmentResult) {
+
+                    assessmentResult.innerHTML = `
+
+                        <div class="assessment-result-content">
+
+                            <span class="section-kicker">
+                                ${
+                                    currentLanguage === "ar"
+                                        ? "نتيجة أولية"
+                                        : "Initial Result"
+                                }
+                            </span>
+
+                            <h3>
+                                ${title}
+                            </h3>
+
+                            <p>
+                                ${message}
+                            </p>
+
+                            <small>
+                                ${
+                                    currentLanguage === "ar"
+                                        ? "هذا الاستبيان توعوي وليس تشخيصًا طبيًا."
+                                        : "This questionnaire is educational and is not a medical diagnosis."
+                                }
+                            </small>
+
+                            <div style="margin-top: 24px;">
+
+                                <button
+                                    type="button"
+                                    class="btn btn-primary assessment-booking-btn"
+                                >
+                                    ${
+                                        currentLanguage === "ar"
+                                            ? "احجز جلسة"
+                                            : "Book a Session"
+                                    }
+                                </button>
+
+                            </div>
+
+                        </div>
+                    `;
+
+
+                    const bookingButton =
+                        $(".assessment-booking-btn", assessmentResult);
+
+                    if (bookingButton) {
+
+                        bookingButton.addEventListener(
+                            "click",
+                            () => {
+
+                                closeModal(assessmentModal);
+
+                                goToBooking();
+                            }
+                        );
+                    }
+                }
+            }
+        );
+    }
+
+
+    /* =====================================================
+       FAQ
+    ===================================================== */
+
+    $$(".faq-item").forEach(item => {
+
+        const question =
+            $(".faq-question", item);
+
+        if (!question) {
+            return;
+        }
+
+        question.addEventListener(
+            "click",
+            () => {
+
+                const wasActive =
+                    item.classList.contains("active");
+
+
+                $$(".faq-item").forEach(
+                    otherItem => {
+
+                        otherItem.classList.remove(
+                            "active"
+                        );
+                    }
+                );
+
+
+                if (!wasActive) {
+
+                    item.classList.add(
+                        "active"
+                    );
+                }
+            }
+        );
+    });
+
+
+    /* =====================================================
+       HEADER SCROLL
+    ===================================================== */
+
+    const siteHeader =
+        $(".site-header");
 
     function handleHeaderScroll() {
 
-        if (!siteHeader) return;
-
-        if (window.scrollY > 35) {
-            siteHeader.classList.add("scrolled");
-        } else {
-            siteHeader.classList.remove("scrolled");
+        if (!siteHeader) {
+            return;
         }
 
+        siteHeader.classList.toggle(
+            "scrolled",
+            window.scrollY > 20
+        );
     }
 
-    window.addEventListener("scroll", handleHeaderScroll, {
-        passive: true
-    });
+    window.addEventListener(
+        "scroll",
+        handleHeaderScroll,
+        { passive: true }
+    );
 
     handleHeaderScroll();
 
 
     /* =====================================================
-       BACK TO TOP
+       ACTIVE NAVIGATION ON SCROLL
     ===================================================== */
 
-    function handleBackToTop() {
+    const sections =
+        $$("main section[id]");
 
-        if (!backToTop) return;
-
-        if (window.scrollY > 600) {
-            backToTop.classList.add("show");
-        } else {
-            backToTop.classList.remove("show");
-        }
-
-    }
-
-    window.addEventListener("scroll", handleBackToTop, {
-        passive: true
-    });
-
-    handleBackToTop();
+    const navLinks =
+        $$(".nav-link");
 
 
-    if (backToTop) {
+    if (
+        sections.length &&
+        navLinks.length &&
+        "IntersectionObserver" in window
+    ) {
 
-        backToTop.addEventListener("click", () => {
+        const sectionObserver =
+            new IntersectionObserver(
+                entries => {
 
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
+                    entries.forEach(entry => {
 
-        });
+                        if (!entry.isIntersecting) {
+                            return;
+                        }
 
-    }
+                        const id =
+                            entry.target.id;
 
+                        navLinks.forEach(link => {
 
-    /* =====================================================
-       SMOOTH SCROLL
-    ===================================================== */
+                            const href =
+                                link.getAttribute(
+                                    "href"
+                                );
 
-    document.querySelectorAll('a[href^="#"]').forEach(link => {
+                            link.classList.toggle(
+                                "active",
+                                href === `#${id}`
+                            );
+                        });
+                    });
+                },
+                {
+                    rootMargin:
+                        "-30% 0px -60% 0px",
+                    threshold: 0
+                }
+            );
 
-        link.addEventListener("click", event => {
-
-            const targetId = link.getAttribute("href");
-
-            if (!targetId || targetId === "#") {
-                return;
-            }
-
-            const target = document.querySelector(targetId);
-
-            if (!target) {
-                return;
-            }
-
-            event.preventDefault();
-
-            const headerHeight = siteHeader
-                ? siteHeader.offsetHeight
-                : 0;
-
-            const targetPosition =
-                target.getBoundingClientRect().top +
-                window.scrollY -
-                headerHeight -
-                15;
-
-            window.scrollTo({
-                top: targetPosition,
-                behavior: "smooth"
-            });
-
-        });
-
-    });
-
-
-    /* =====================================================
-       REVEAL ANIMATIONS
-    ===================================================== */
-
-    if ("IntersectionObserver" in window) {
-
-        const revealObserver = new IntersectionObserver(
-            entries => {
-
-                entries.forEach(entry => {
-
-                    if (entry.isIntersecting) {
-
-                        entry.target.classList.add("visible");
-
-                        revealObserver.unobserve(entry.target);
-
-                    }
-
-                });
-
-            },
-            {
-                threshold: 0.12,
-                rootMargin: "0px 0px -50px 0px"
-            }
-        );
-
-        revealElements.forEach(element => {
-            revealObserver.observe(element);
-        });
-
-    } else {
-
-        revealElements.forEach(element => {
-            element.classList.add("visible");
-        });
-
-    }
-
-
-    /* =====================================================
-       ACTIVE NAVIGATION
-    ===================================================== */
-
-    function updateActiveNavigation() {
-
-        if (!sections.length) return;
-
-        const scrollPosition =
-            window.scrollY +
-            (siteHeader ? siteHeader.offsetHeight : 0) +
-            120;
-
-        let currentSection = "";
 
         sections.forEach(section => {
 
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
+            sectionObserver.observe(section);
+        });
+    }
+
+
+    /* =====================================================
+       CLOSE MOBILE MENU WHEN CLICKING OUTSIDE
+    ===================================================== */
+
+    document.addEventListener(
+        "click",
+        event => {
 
             if (
-                scrollPosition >= sectionTop &&
-                scrollPosition < sectionTop + sectionHeight
+                !mainNav ||
+                !menuToggle
             ) {
-                currentSection = section.id;
+                return;
             }
-
-        });
-
-        navLinks.forEach(link => {
-
-            const href = link.getAttribute("href");
-
-            link.classList.toggle(
-                "active",
-                href === `#${currentSection}`
-            );
-
-        });
-
-    }
-
-    window.addEventListener("scroll", updateActiveNavigation, {
-        passive: true
-    });
-
-    updateActiveNavigation();
-
-
-    /* =====================================================
-       FAQ
-       ===================================================== */
-
-    const faqItems = document.querySelectorAll(".faq-list details");
-
-    faqItems.forEach(item => {
-
-        item.addEventListener("toggle", () => {
-
-            if (!item.open) return;
-
-            faqItems.forEach(otherItem => {
-
-                if (otherItem !== item) {
-                    otherItem.removeAttribute("open");
-                }
-
-            });
-
-        });
-
-    });
-
-
-    /* =====================================================
-       LANGUAGE SYSTEM
-    ===================================================== */
-
-    const translations = {
-
-        ar: {
-
-            documentTitle:
-                "Mariam Mahmoud | Psychology • Coaching • Personal Growth",
-
-            metaDescription:
-                "Mariam Mahmoud — مساحة هادئة لفهم الذات، تطوير الشخصية، وبناء خطوات أكثر وضوحًا نحو الحياة التي تريدها.",
-
-            navHome: "الرئيسية",
-            navAbout: "عن مريم",
-            navServices: "الخدمات",
-            navJourney: "الرحلة",
-            navJournal: "المقالات",
-            navFaq: "الأسئلة",
-            navContact: "تواصل",
-
-            bookSession: "احجز جلسة",
-
-            heroEyebrow:
-                "مساحة لفهم الذات والنمو",
-
-            heroTitle1:
-                "افهم نفسك",
-
-            heroTitle2:
-                "بشكل أعمق.",
-
-            heroDescription:
-                "مساحة هادئة تساعدك على التوقف قليلًا، فهم ما بداخلك، وترتيب أفكارك، ثم اتخاذ خطوات أكثر وضوحًا نحو ما تريده.",
-
-            heroBook:
-                "احجز جلسة",
-
-            heroAbout:
-                "تعرف على مريم",
-
-            heroNote:
-                "مساحة خاصة • حوار هادئ • خطوات واضحة",
-
-            floatingPause:
-                "Pause",
-
-            floatingUnderstand:
-                "Understand",
-
-            scrollExplore:
-                "SCROLL TO EXPLORE",
-
-            introTitle:
-                "مساحة تبدأ",
-
-            introAccent:
-                "منك.",
-
-            introText:
-                "أحيانًا لا نحتاج إلى المزيد من الضوضاء، بل نحتاج إلى مساحة نستطيع فيها أن نسمع أنفسنا بوضوح.",
-
-            discoverSpace:
-                "اكتشف المساحة",
-
-            aboutKicker:
-                "ABOUT MARIAM",
-
-            aboutTitle1:
-                "رحلة التغيير",
-
-            aboutTitle2:
-                "تبدأ من",
-
-            aboutAccent:
-                "الفهم.",
-
-            aboutParagraph1:
-                "كل شخص لديه قصة مختلفة، وأفكار مختلفة، وطريقة خاصة في التعامل مع الحياة. لذلك تبدأ الرحلة هنا بالاستماع والفهم، وليس بإعطاء إجابات جاهزة.",
-
-            aboutParagraph2:
-                "هذه المساحة مصممة للحوار، التأمل، اكتشاف الذات، وبناء خطوات عملية تناسب احتياجاتك وأهدافك.",
-
-            startConversation:
-                "ابدأ محادثتك",
-
-            imageCaption:
-                "Portrait / Personal Space",
-
-            servicesKicker:
-                "WHAT WE EXPLORE",
-
-            servicesTitle1:
-                "مجالات يمكن أن",
-
-            servicesTitle2:
-                "نبدأ منها.",
-
-            servicesDescription:
-                "ليس الهدف أن تحصل على إجابة جاهزة، بل أن تجد مساحة تساعدك على رؤية الصورة بشكل أوضح.",
-
-            service1Title:
-                "الوعي بالذات",
-
-            service1Text:
-                "فهم الأفكار والمشاعر والأنماط التي تؤثر على حياتك اليومية.",
-
-            service2Title:
-                "التطوير الشخصي",
-
-            service2Text:
-                "تحويل الرغبة في التغيير إلى خطوات واضحة وقابلة للتنفيذ.",
-
-            service3Title:
-                "التوازن العاطفي",
-
-            service3Text:
-                "التعرف على المشاعر والتعامل معها بطريقة أكثر وعيًا وهدوءًا.",
-
-            service4Title:
-                "العلاقات والتواصل",
-
-            service4Text:
-                "فهم أنماط التواصل والحدود والاحتياجات داخل العلاقات.",
-
-            journeyKicker:
-                "THE JOURNEY",
-
-            journeyTitle1:
-                "خطوات صغيرة نحو",
-
-            journeyTitle2:
-                "وضوح أكبر.",
-
-            journeyDescription:
-                "الرحلة ليست سباقًا، بل مساحة تمنحك الوقت لفهم ما تحتاجه والتحرك بإيقاع يناسبك.",
-
-            journey1Title:
-                "نتوقف ونستمع",
-
-            journey1Text:
-                "نمنح أفكارك ومشاعرك مساحة آمنة للظهور دون حكم أو استعجال.",
-
-            journey2Title:
-                "نفهم الصورة",
-
-            journey2Text:
-                "نلاحظ الأنماط والاحتياجات والعوامل التي تؤثر في اختياراتك اليومية.",
-
-            journey3Title:
-                "نختار خطوة مناسبة",
-
-            journey3Text:
-                "نحوّل الفهم إلى ممارسة بسيطة وواقعية يمكن البناء عليها بثبات.",
-
-            journalKicker:
-                "JOURNAL",
-
-            journalTitle1:
-                "أفكار تساعدك على",
-
-            journalTitle2:
-                "رؤية نفسك.",
-
-            journalDescription:
-                "مقالات قصيرة للتأمل وفهم الذات والتعامل مع الحياة بوعي وهدوء.",
-
-            article1Title:
-                "لماذا نحتاج إلى التوقف أحيانًا؟",
-
-            article1Text:
-                "التوقف ليس تراجعًا؛ قد يكون الطريقة التي نسمع بها احتياجاتنا بوضوح.",
-
-            article2Title:
-                "كيف نضع حدودًا أكثر صحة؟",
-
-            article2Text:
-                "الحدود الواضحة تساعدنا على حماية طاقتنا وبناء علاقات أكثر توازنًا.",
-
-            article3Title:
-                "من التفكير الزائد إلى خطوة واحدة",
-
-            article3Text:
-                "لا تحتاج دائمًا إلى حل كل شيء اليوم؛ ابدأ بما يمكنك فعله الآن.",
-
-            readArticle:
-                "اقرأ المقال",
-
-            article1Full:
-                "عندما نمنح أنفسنا لحظة هدوء، يصبح من الأسهل ملاحظة ما نشعر به وما نحتاج إليه بدل الاستمرار في ردود الفعل التلقائية.",
-
-            article2Full:
-                "ابدأ بتحديد ما يناسبك وما لا يناسبك، ثم عبّر عن ذلك بلغة واضحة ومحترمة، مع تذكّر أن قول لا لا يعني رفض الآخرين.",
-
-            article3Full:
-                "اكتب ما يشغلك، اختر جزءًا واحدًا يمكنك التأثير فيه، وحدد خطوة صغيرة قابلة للتنفيذ خلال اليوم.",
-
-            faqKicker:
-                "FAQ",
-
-            faqTitle1:
-                "أسئلة",
-
-            faqTitle2:
-                "شائعة.",
-
-            faqDescription:
-                "إجابات مختصرة تساعدك على معرفة ما يمكن توقعه قبل بدء الرحلة.",
-
-            faq1Question:
-                "كيف أعرف أن الجلسة مناسبة لي؟",
-
-            faq1Answer:
-                "إذا كنت ترغب في فهم نفسك بشكل أعمق أو ترتيب أفكارك أو التعامل مع تحدٍّ متكرر، فقد تكون الجلسة بداية مناسبة لاستكشاف احتياجاتك.",
-
-            faq2Question:
-                "ماذا يحدث في الجلسة الأولى؟",
-
-            faq2Answer:
-                "نبدأ بالتعارف وفهم ما دفعك للتواصل، ثم نحدد معًا الموضوعات والأهداف التي ترغب في العمل عليها بإيقاع مريح وواضح.",
-
-            faq3Question:
-                "هل الجلسات سرية؟",
-
-            faq3Answer:
-                "نعم، تُعامل المعلومات التي تشاركها باحترام وخصوصية، مع توضيح أي استثناءات مهنية أو قانونية عند الحاجة.",
-
-            faq4Question:
-                "هل يمكن عقد الجلسات عن بُعد؟",
-
-            faq4Answer:
-                "يمكن ترتيب الجلسات عن بُعد بحسب المواعيد المتاحة، وسيتم توضيح التفاصيل عند التواصل.",
-
-            contactKicker:
-                "LET'S TALK",
-
-            contactTitle1:
-                "مستعد تبدأ",
-
-            contactTitle2:
-                "من نفسك؟",
-
-            contactDescription:
-                "تواصل معنا لمعرفة المزيد عن الجلسات والمساحة المناسبة لك.",
-
-            contactButton:
-                "احجز جلسة",
-
-            footerSubtitle:
-                "Psychology • Coaching • Personal Growth",
-
-            footerRights:
-                "All rights reserved."
-
-        },
-
-
-        en: {
-
-            documentTitle:
-                "Mariam Mahmoud | Psychology • Coaching • Personal Growth",
-
-            metaDescription:
-                "Mariam Mahmoud — A thoughtful space for self-understanding, personal development, and clearer steps toward the life you want.",
-
-            navHome: "Home",
-            navAbout: "About",
-            navServices: "Services",
-            navJourney: "Journey",
-            navJournal: "Journal",
-            navFaq: "FAQ",
-            navContact: "Contact",
-
-            bookSession: "Book a Session",
-
-            heroEyebrow:
-                "A space for self-understanding & growth",
-
-            heroTitle1:
-                "Understand yourself",
-
-            heroTitle2:
-                "more deeply.",
-
-            heroDescription:
-                "A thoughtful space to pause, understand what is happening within you, organize your thoughts, and take clearer steps toward what matters to you.",
-
-            heroBook:
-                "Book a Session",
-
-            heroAbout:
-                "Meet Mariam",
-
-            heroNote:
-                "Private space • Thoughtful conversation • Clear steps",
-
-            floatingPause:
-                "Pause",
-
-            floatingUnderstand:
-                "Understand",
-
-            scrollExplore:
-                "SCROLL TO EXPLORE",
-
-            introTitle:
-                "A space that starts",
-
-            introAccent:
-                "with you.",
-
-            introText:
-                "Sometimes we do not need more noise. We need a space where we can finally hear ourselves clearly.",
-
-            discoverSpace:
-                "Discover the space",
-
-            aboutKicker:
-                "ABOUT MARIAM",
-
-            aboutTitle1:
-                "Change begins",
-
-            aboutTitle2:
-                "with",
-
-            aboutAccent:
-                "understanding.",
-
-            aboutParagraph1:
-                "Every person has a different story, different thoughts, and a unique way of moving through life. That is why this journey begins with listening and understanding rather than ready-made answers.",
-
-            aboutParagraph2:
-                "This space is designed for conversation, reflection, self-discovery, and building practical steps that fit your needs and goals.",
-
-            startConversation:
-                "Start a conversation",
-
-            imageCaption:
-                "Portrait / Personal Space",
-
-            servicesKicker:
-                "WHAT WE EXPLORE",
-
-            servicesTitle1:
-                "Areas we can",
-
-            servicesTitle2:
-                "explore together.",
-
-            servicesDescription:
-                "The goal is not to give you a ready-made answer, but to create space for seeing your situation with greater clarity.",
-
-            service1Title:
-                "Self-Awareness",
-
-            service1Text:
-                "Understanding the thoughts, emotions, and patterns that influence your everyday life.",
-
-            service2Title:
-                "Personal Growth",
-
-            service2Text:
-                "Turning the desire for change into clear and practical steps.",
-
-            service3Title:
-                "Emotional Balance",
-
-            service3Text:
-                "Recognizing emotions and learning to approach them with greater awareness and calm.",
-
-            service4Title:
-                "Relationships & Communication",
-
-            service4Text:
-                "Exploring communication patterns, boundaries, and needs within relationships.",
-
-            journeyKicker:
-                "THE JOURNEY",
-
-            journeyTitle1:
-                "Small steps toward",
-
-            journeyTitle2:
-                "greater clarity.",
-
-            journeyDescription:
-                "The journey is not a race. It is a space to understand what you need and move at a pace that feels right for you.",
-
-            journey1Title:
-                "Pause & Listen",
-
-            journey1Text:
-                "Giving your thoughts and emotions space to be expressed without judgment or pressure.",
-
-            journey2Title:
-                "Understand the Picture",
-
-            journey2Text:
-                "Noticing patterns, needs, and factors that influence your everyday choices.",
-
-            journey3Title:
-                "Choose a Meaningful Step",
-
-            journey3Text:
-                "Turning understanding into a simple, realistic practice that can be built on over time.",
-
-            journalKicker:
-                "JOURNAL",
-
-            journalTitle1:
-                "Ideas to help you",
-
-            journalTitle2:
-                "see yourself.",
-
-            journalDescription:
-                "Short reflections about self-understanding, personal growth, and moving through life with greater awareness.",
-
-            article1Title:
-                "Why do we sometimes need to pause?",
-
-            article1Text:
-                "Pausing is not moving backward. It can be the way we hear our needs more clearly.",
-
-            article2Title:
-                "How can we create healthier boundaries?",
-
-            article2Text:
-                "Clear boundaries can help protect our energy and create more balanced relationships.",
-
-            article3Title:
-                "From overthinking to one clear step",
-
-            article3Text:
-                "You do not always need to solve everything today. Start with what you can do now.",
-
-            readArticle:
-                "Read article",
-
-            article1Full:
-                "When we give ourselves a quiet moment, it becomes easier to notice what we feel and what we need instead of continuing with automatic reactions.",
-
-            article2Full:
-                "Start by identifying what works for you and what does not, then express it clearly and respectfully. Saying no does not mean rejecting other people.",
-
-            article3Full:
-                "Write down what is occupying your mind, choose one part you can influence, and define one small step you can take today.",
-
-            faqKicker:
-                "FAQ",
-
-            faqTitle1:
-                "Frequently",
-
-            faqTitle2:
-                "asked questions.",
-
-            faqDescription:
-                "Short answers to help you understand what to expect before beginning.",
-
-            faq1Question:
-                "How do I know if a session is right for me?",
-
-            faq1Answer:
-                "If you want to understand yourself more deeply, organize your thoughts, or explore a recurring challenge, a session can be a starting point for understanding what you need.",
-
-            faq2Question:
-                "What happens during the first session?",
-
-            faq2Answer:
-                "We begin by getting to know you and understanding what brought you here, then identify the topics and goals you would like to explore at a comfortable and clear pace.",
-
-            faq3Question:
-                "Are sessions private?",
-
-            faq3Answer:
-                "Information you share is treated with respect and privacy, with any relevant professional or legal exceptions explained when necessary.",
-
-            faq4Question:
-                "Are online sessions available?",
-
-            faq4Answer:
-                "Online sessions can be arranged depending on availability, and the details can be discussed when you get in touch.",
-
-            contactKicker:
-                "LET'S TALK",
-
-            contactTitle1:
-                "Ready to begin",
-
-            contactTitle2:
-                "with yourself?",
-
-            contactDescription:
-                "Get in touch to learn more about the sessions and find the space that fits you.",
-
-            contactButton:
-                "Book a Session",
-
-            footerSubtitle:
-                "Psychology • Coaching • Personal Growth",
-
-            footerRights:
-                "All rights reserved."
-
-        }
-
-    };
-
-
-    /* =====================================================
-       LANGUAGE HELPER
-    ===================================================== */
-
-    function setText(selector, text) {
-
-        const element = document.querySelector(selector);
-
-        if (element && text !== undefined) {
-            element.textContent = text;
-        }
-
-    }
-
-
-    function applyLanguage(language) {
-
-        const t = translations[language] || translations.ar;
-
-        /* -----------------------------------------------
-           HTML direction
-        ----------------------------------------------- */
-
-        document.documentElement.lang = language;
-
-        document.documentElement.dir =
-            language === "ar"
-                ? "rtl"
-                : "ltr";
-
-        body.classList.toggle(
-            "english-mode",
-            language === "en"
-        );
-
-
-        /* -----------------------------------------------
-           Page metadata
-        ----------------------------------------------- */
-
-        document.title = t.documentTitle;
-
-        const description =
-            document.querySelector('meta[name="description"]');
-
-        if (description) {
-            description.setAttribute(
-                "content",
-                t.metaDescription
-            );
-        }
-
-
-        /* -----------------------------------------------
-           Header
-        ----------------------------------------------- */
-
-        setText(".nav-link[href='#home']", t.navHome);
-        setText(".nav-link[href='#about']", t.navAbout);
-        setText(".nav-link[href='#services']", t.navServices);
-        setText(".nav-link[href='#journey']", t.navJourney);
-        setText(".nav-link[href='#journal']", t.navJournal);
-        setText(".nav-link[href='#faq']", t.navFaq);
-        setText(".nav-link[href='#contact']", t.navContact);
-
-        setText(".header-cta", t.bookSession);
-
-
-        /* -----------------------------------------------
-           Hero
-        ----------------------------------------------- */
-
-        const heroEyebrow =
-            document.querySelector(".hero-eyebrow span:last-child");
-
-        if (heroEyebrow) {
-            heroEyebrow.textContent = t.heroEyebrow;
-        }
-
-        setText(".hero-title span:first-child", t.heroTitle1);
-        setText(".hero-title-accent", t.heroTitle2);
-
-        setText(".hero-description", t.heroDescription);
-
-        const heroButtons =
-            document.querySelectorAll(".hero-buttons .btn");
-
-        if (heroButtons[0]) {
-
-            const span =
-                heroButtons[0].querySelector("span:first-child");
-
-            if (span) {
-                span.textContent = t.heroBook;
-            }
-
-        }
-
-        if (heroButtons[1]) {
-            heroButtons[1].textContent = t.heroAbout;
-        }
-
-        const heroNote =
-            document.querySelector(".hero-note span:last-child");
-
-        if (heroNote) {
-            heroNote.textContent = t.heroNote;
-        }
-
-        setText(".floating-card-top span:last-child", t.floatingPause);
-        setText(".floating-card-bottom span:last-child", t.floatingUnderstand);
-
-        setText(".hero-bottom-inner span:first-child", t.scrollExplore);
-
-
-        /* -----------------------------------------------
-           Intro
-        ----------------------------------------------- */
-
-        const introTitle =
-            document.querySelector(".intro-title h2");
-
-        if (introTitle) {
-
-            introTitle.innerHTML =
-                `${t.introTitle}<br><em>${t.introAccent}</em>`;
-
-        }
-
-        setText(".intro-text p", t.introText);
-        setText(".intro-text .text-link", t.discoverSpace);
-
-
-        /* -----------------------------------------------
-           About
-        ----------------------------------------------- */
-
-        setText(".about-content .section-kicker", t.aboutKicker);
-
-        const aboutTitle =
-            document.querySelector(".about-content h2");
-
-        if (aboutTitle) {
-
-            aboutTitle.innerHTML =
-                `${t.aboutTitle1}<br>${t.aboutTitle2} <em>${t.aboutAccent}</em>`;
-
-        }
-
-        const aboutParagraphs =
-            document.querySelectorAll(".about-content p");
-
-        if (aboutParagraphs[0]) {
-            aboutParagraphs[0].textContent = t.aboutParagraph1;
-        }
-
-        if (aboutParagraphs[1]) {
-            aboutParagraphs[1].textContent = t.aboutParagraph2;
-        }
-
-        setText(".outline-link", t.startConversation);
-        setText(".image-caption", t.imageCaption);
-
-
-        /* -----------------------------------------------
-           Services
-        ----------------------------------------------- */
-
-        setText(".services-preview .section-kicker", t.servicesKicker);
-
-        const servicesTitle =
-            document.querySelector(".services-preview .section-heading h2");
-
-        if (servicesTitle) {
-
-            servicesTitle.innerHTML =
-                `${t.servicesTitle1}<br><em>${t.servicesTitle2}</em>`;
-
-        }
-
-        setText(
-            ".services-preview .section-heading > p",
-            t.servicesDescription
-        );
-
-        const serviceItems =
-            document.querySelectorAll(".service-item");
-
-        const serviceData = [
-            [t.service1Title, t.service1Text],
-            [t.service2Title, t.service2Text],
-            [t.service3Title, t.service3Text],
-            [t.service4Title, t.service4Text]
-        ];
-
-        serviceItems.forEach((item, index) => {
-
-            if (!serviceData[index]) return;
-
-            const title =
-                item.querySelector("h3");
-
-            const paragraph =
-                item.querySelector("p");
-
-            if (title) {
-                title.textContent = serviceData[index][0];
-            }
-
-            if (paragraph) {
-                paragraph.textContent = serviceData[index][1];
-            }
-
-        });
-
-
-        /* -----------------------------------------------
-           Journey
-        ----------------------------------------------- */
-
-        const journeySection =
-            document.querySelector(".journey-section");
-
-        if (journeySection) {
-
-            setText(
-                ".journey-section .section-kicker",
-                t.journeyKicker
-            );
-
-            const title =
-                journeySection.querySelector(".section-heading h2");
-
-            if (title) {
-
-                title.innerHTML =
-                    `${t.journeyTitle1}<br><em>${t.journeyTitle2}</em>`;
-
-            }
-
-            setText(
-                ".journey-section .section-heading > p",
-                t.journeyDescription
-            );
-
-            const journeyItems =
-                journeySection.querySelectorAll(".journey-item");
-
-            const journeyData = [
-                [t.journey1Title, t.journey1Text],
-                [t.journey2Title, t.journey2Text],
-                [t.journey3Title, t.journey3Text]
-            ];
-
-            journeyItems.forEach((item, index) => {
-
-                if (!journeyData[index]) return;
-
-                setText(
-                    `${".journey-item:nth-child(" + (index + 1) + ")"} h3`,
-                    journeyData[index][0]
-                );
-
-                setText(
-                    `${".journey-item:nth-child(" + (index + 1) + ")"} p`,
-                    journeyData[index][1]
-                );
-
-            });
-
-        }
-
-
-        /* -----------------------------------------------
-           Journal
-        ----------------------------------------------- */
-
-        const journalSection =
-            document.querySelector(".journal-section");
-
-        if (journalSection) {
-
-            setText(
-                ".journal-section .section-kicker",
-                t.journalKicker
-            );
-
-            const journalTitle =
-                journalSection.querySelector(".section-heading h2");
-
-            if (journalTitle) {
-
-                journalTitle.innerHTML =
-                    `${t.journalTitle1}<br><em>${t.journalTitle2}</em>`;
-
-            }
-
-            setText(
-                ".journal-section .section-heading > p",
-                t.journalDescription
-            );
-
-            const journalCards =
-                journalSection.querySelectorAll(".journal-card");
-
-            const journalData = [
-                [t.article1Title, t.article1Text],
-                [t.article2Title, t.article2Text],
-                [t.article3Title, t.article3Text]
-            ];
-
-            journalCards.forEach((card, index) => {
-
-                if (!journalData[index]) return;
-
-                const title =
-                    card.querySelector("h3");
-
-                const paragraph =
-                    card.querySelector("p");
-
-                const link =
-                    card.querySelector(".text-link");
-
-                if (title) {
-                    title.textContent = journalData[index][0];
-                }
-
-                if (paragraph) {
-                    paragraph.textContent = journalData[index][1];
-                }
-
-                if (link) {
-                    link.innerHTML =
-                        `${t.readArticle} <span>←</span>`;
-                }
-
-            });
-
-
-            const fullArticles =
-                journalSection.querySelectorAll(".journal-articles article");
-
-            const fullArticleData = [
-                [t.article1Title, t.article1Full],
-                [t.article2Title, t.article2Full],
-                [t.article3Title, t.article3Full]
-            ];
-
-            fullArticles.forEach((article, index) => {
-
-                if (!fullArticleData[index]) return;
-
-                const title =
-                    article.querySelector("h3");
-
-                const paragraph =
-                    article.querySelector("p");
-
-                if (title) {
-                    title.textContent =
-                        fullArticleData[index][0];
-                }
-
-                if (paragraph) {
-                    paragraph.textContent =
-                        fullArticleData[index][1];
-                }
-
-            });
-
-        }
-
-
-        /* -----------------------------------------------
-           FAQ
-        ----------------------------------------------- */
-
-        const faqSection =
-            document.querySelector(".faq-section");
-
-        if (faqSection) {
-
-            setText(
-                ".faq-section .section-kicker",
-                t.faqKicker
-            );
-
-            const faqTitle =
-                faqSection.querySelector(".section-heading h2");
-
-            if (faqTitle) {
-
-                faqTitle.innerHTML =
-                    `${t.faqTitle1}<br><em>${t.faqTitle2}</em>`;
-
-            }
-
-            setText(
-                ".faq-section .section-heading > p",
-                t.faqDescription
-            );
-
-            const faqData = [
-                [t.faq1Question, t.faq1Answer],
-                [t.faq2Question, t.faq2Answer],
-                [t.faq3Question, t.faq3Answer],
-                [t.faq4Question, t.faq4Answer]
-            ];
-
-            const faqItems =
-                faqSection.querySelectorAll("details");
-
-            faqItems.forEach((item, index) => {
-
-                if (!faqData[index]) return;
-
-                const question =
-                    item.querySelector("summary");
-
-                const answer =
-                    item.querySelector("p");
-
-                if (question) {
-                    question.textContent =
-                        faqData[index][0];
-                }
-
-                if (answer) {
-                    answer.textContent =
-                        faqData[index][1];
-                }
-
-            });
-
-        }
-
-
-        /* -----------------------------------------------
-           Contact
-        ----------------------------------------------- */
-
-        const contactSection =
-            document.querySelector(".contact-section");
-
-        if (contactSection) {
-
-            setText(
-                ".contact-section .section-kicker",
-                t.contactKicker
-            );
-
-            const contactTitle =
-                contactSection.querySelector("h2");
-
-            if (contactTitle) {
-
-                contactTitle.innerHTML =
-                    `${t.contactTitle1}<br><em>${t.contactTitle2}</em>`;
-
-            }
-
-            setText(
-                ".contact-section p",
-                t.contactDescription
-            );
-
-            const contactButton =
-                contactSection.querySelector(".contact-button span:first-child");
-
-            if (contactButton) {
-                contactButton.textContent =
-                    t.contactButton;
-            }
-
-        }
-
-
-        /* -----------------------------------------------
-           Footer
-        ----------------------------------------------- */
-
-        setText(".footer-brand span:not(.brand-mark)", t.footerSubtitle);
-
-        const footerCopy =
-            document.querySelector(".footer-copy");
-
-        if (footerCopy) {
-
-            const year =
-                currentYear
-                    ? currentYear.textContent
-                    : new Date().getFullYear();
-
-            footerCopy.textContent =
-                `© ${year} Mariam Mahmoud. ${t.footerRights}`;
-
-        }
-
-
-        /* -----------------------------------------------
-           Language buttons
-        ----------------------------------------------- */
-
-        const arButton =
-            document.querySelector(".lang-ar");
-
-        const enButton =
-            document.querySelector(".lang-en");
-
-        if (arButton) {
-            arButton.classList.toggle(
-                "active",
-                language === "ar"
-            );
-        }
-
-        if (enButton) {
-            enButton.classList.toggle(
-                "active",
-                language === "en"
-            );
-        }
-
-
-        /* -----------------------------------------------
-           Save language
-        ----------------------------------------------- */
-
-        try {
-            localStorage.setItem(
-                "mariam_language",
-                language
-            );
-        } catch (error) {
-            /* Local storage may be unavailable */
-        }
-
-    }
-
-
-    /* =====================================================
-       LANGUAGE SWITCHER
-    ===================================================== */
-
-    if (languageSwitcher) {
-
-        languageSwitcher.addEventListener("click", () => {
-
-            const currentLanguage =
-                document.documentElement.lang === "en"
-                    ? "en"
-                    : "ar";
-
-            const nextLanguage =
-                currentLanguage === "ar"
-                    ? "en"
-                    : "ar";
-
-            applyLanguage(nextLanguage);
-
-        });
-
-    }
-
-
-    /* =====================================================
-       LOAD SAVED LANGUAGE
-    ===================================================== */
-
-    let savedLanguage = "ar";
-
-    try {
-
-        const storedLanguage =
-            localStorage.getItem("mariam_language");
-
-        if (
-            storedLanguage === "ar" ||
-            storedLanguage === "en"
-        ) {
-            savedLanguage = storedLanguage;
-        }
-
-    } catch (error) {
-        savedLanguage = "ar";
-    }
-
-    applyLanguage(savedLanguage);
-
-
-    /* =====================================================
-       KEYBOARD ACCESSIBILITY
-    ===================================================== */
-
-    document.addEventListener("keydown", event => {
-
-        if (event.key === "Escape") {
-            closeMenu();
-        }
-
-    });
-
-
-    /* =====================================================
-       PREVENT BROKEN PLACEHOLDER LINKS
-       Only for href="#"
-    ===================================================== */
-
-    document.querySelectorAll('a[href="#"]').forEach(link => {
-
-        link.addEventListener("click", event => {
-            event.preventDefault();
-        });
-
-    });
-
-
-    /* =====================================================
-       INITIAL PAGE STATE
-    ===================================================== */
-
-    requestAnimationFrame(() => {
-
-        revealElements.forEach((element, index) => {
 
             if (
-                element.getBoundingClientRect().top <
-                window.innerHeight * 0.9
+                mainNav.classList.contains("open") &&
+                !mainNav.contains(event.target) &&
+                !menuToggle.contains(event.target)
             ) {
 
-                setTimeout(() => {
-                    element.classList.add("visible");
-                }, index * 100);
+                mainNav.classList.remove(
+                    "open"
+                );
 
+                menuToggle.classList.remove(
+                    "active"
+                );
+
+                menuToggle.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
             }
+        }
+    );
 
-        });
 
-    });
+    /* =====================================================
+       INITIALIZATION
+    ===================================================== */
+
+    bindBookingLinks();
+
+    setLanguage(currentLanguage);
 
 });
